@@ -8,9 +8,9 @@ trait Projector {
   def project(attrId: Int)(implicit db: Database): Boolean
 
   def apply(change: EntityChange)(implicit db: Database) = change match {
-    case Inserted(entity) =>
-    case Updated(_, _, changes) => changes.keySet.filter(project(_))
-    case Removed(entity) => new client.Removed(new client.EntityId(entity.id))
+    case Inserted(id) =>
+    case Updated(_, changes) => changes.keySet.filter(project(_))
+    case Removed(id) => new client.Removed(new client.EntityId(id.underlying))
   }
 }
 

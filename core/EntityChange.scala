@@ -1,11 +1,10 @@
 package sync
 
 trait EntityChange[I] {
-  val entity: I
+  val id: I
 }
-case class Inserted[I](entity: I) extends EntityChange[I]
-case class Updated[I](before: I, after: I, changes: Map[Int,FactChange[_]]) extends EntityChange[I] {
-  val entity = after
+case class Inserted[I](id: I) extends EntityChange[I]
+case class Updated[I](id: I, changes: Map[Int,FactChange[_]]) extends EntityChange[I] {
   def merge(next: Updated[I]) = {
     val prevChanges = changes.asInstanceOf[Map[Int,FactChange[Any]]]
     val nextChanges = next.changes.asInstanceOf[Map[Int,FactChange[Any]]]
@@ -19,11 +18,7 @@ case class Updated[I](before: I, after: I, changes: Map[Int,FactChange[_]]) exte
     if(res.size == 0)
       None
     else    
-      Some(Updated(
-        before,
-        next.after,
-        res
-      ))
+      Some(Updated(id, res))
   }
 }
-case class Removed[I](entity: I) extends EntityChange[I]
+case class Removed[I](id: I) extends EntityChange[I]

@@ -6,23 +6,25 @@ trait Selector {
   def refresh(implicit db: Database): Set[Entity]
   def selectEntity(entity: Entity): Boolean
 
-  def apply(change: EntityChange) = change match {
-    case in: Inserted => if(selectEntity(in.entity)) Some(in) else None
+  def selectId(id: FinalId)(implicit db: Database) = selectEntity(db.entity(id))
+
+  def apply(dbBefore: Database, dbAfter: Database, change: EntityChange) = change match {
+    case in: Inserted => if(selectId(in.id)(dbAfter)) Some(in) else None
     case up: Updated => {
-      val selectedBefore = selectEntity(up.before)
-      val selectedAfter = selectEntity(up.after)
+      val selectedBefore = selectId(up.id)(dbBefore)
+      val selectedAfter = selectId(up.id)(dbAfter)
       if(selectedBefore)
         if(!selectedAfter)
-          Some(new Removed(up.before))
+          Some(new Removed(up.id))
         else
           Some(up)
       else
         if(selectedAfter)
-          Some(new Inserted(up.after))
+          Some(new Inserted(up.id))
         else
           None
     }
-    case rem: Removed => if(selectEntity(rem.entity)) Some(rem) else None
+    case rem: Removed => if(selectId(rem.id)(dbBefore)) Some(rem) else None
   }
 }
 

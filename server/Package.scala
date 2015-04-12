@@ -8,8 +8,8 @@ package object server {
   type One = Cardinality.one.type
   type Many = Cardinality.many.type
 
-  type EntityChange = sync.EntityChange[Entity]
-  type Inserted = sync.Inserted[Entity]
-  type Updated = sync.Updated[Entity]
-  type Removed = sync.Removed[Entity]
+  type EntityChange = sync.EntityChange[FinalId]
+  type Inserted = sync.Inserted[FinalId]
+  type Updated = sync.Updated[FinalId]
+  type Removed = sync.Removed[FinalId]
 }

@@ -5,7 +5,7 @@ import sync.client._
 
 import datomisca._
 
-case class Changeset(beforeDb: Database, afterDb: Database, changes: Map[Entity,EntityChange])
+case class Changeset(beforeDb: Database, afterDb: Database, changes: Map[FinalId,EntityChange])
 
 object Changeset {
   def apply(reports: Seq[TxReport]): Changeset = {
@@ -14,15 +14,15 @@ object Changeset {
     Changeset(
       dbBefore,
       dbAfter,
-      reports.map(EntityChange(_)).flatten.foldLeft(Map[Entity,EntityChange]()) { (res,entityChange) =>
-        val entity = entityChange.entity
-        (res.get(entity), entityChange) match {
-          case (None, ec) => res + (entity -> entityChange)
+      reports.map(EntityChange(_)).flatten.foldLeft(Map[FinalId,EntityChange]()) { (res,entityChange) =>
+        val id = entityChange.id
+        (res.get(id), entityChange) match {
+          case (None, ec) => res + (id -> entityChange)
           case (Some(ins: Inserted), rem: Removed) => res
-          case (Some(ins: Inserted), up: Updated) => res + (entity -> ins)
-          case (Some(up: Updated), upn: Updated) => up.merge(upn).map(merged => res + (entity -> merged)).getOrElse(res)
-          case (Some(up: Updated), rem: Removed) => res + (entity -> rem)
-          case (Some(rem: Removed), ins: Inserted) => res + (entity -> ins)
+          case (Some(ins: Inserted), up: Updated) => res + (id -> ins)
+          case (Some(up: Updated), upn: Updated) => up.merge(upn).map(merged => res + (id -> merged)).getOrElse(res)
+          case (Some(up: Updated), rem: Removed) => res + (id -> rem)
+          case (Some(rem: Removed), ins: Inserted) => res + (id -> ins)
         }
       }
     )
@@ -42,20 +42,21 @@ object EntityChange {
     val dbAfter = txReport.dbAfter
 
     txReport.txData.groupBy(_.id).map { kv =>
-      val (id, datoms) = kv
+      val id = new FinalId(kv._1)
+      val datoms = kv._2
       val entityBefore = dbBefore.entity(id)
       val entityAfter = dbAfter.entity(id)
 
       if(!entityExists(entityBefore))
-        Inserted(entityAfter)
+        Inserted(id)
       else
         if(entityExists(entityAfter))
-          Updated(entityBefore, entityAfter, datoms.groupBy(_.attrId).map { kv =>
+          Updated(id, datoms.groupBy(_.attrId).map { kv =>
             val (attrId, datoms) = kv
             (attrId -> FactChange(datoms.map(datom => (datom.value -> datom.added)).toMap))
           }.toMap)
         else
-          Removed(entityBefore)
+          Removed(id)
     }.toSeq
   }
 }
