@@ -7,22 +7,22 @@ trait Selector {
   def selectEntity(entity: Entity): Boolean
 
   def apply(change: EntityChange) = change match {
-    case in @ Inserted(entity) => if(selectEntity(entity)) Some(in) else None
-    case up @ Updated(before, after, updates) => {
-      val selectedBefore = selectEntity(before)
-      val selectedAfter = selectEntity(after)
+    case in: Inserted => if(selectEntity(in.entity)) Some(in) else None
+    case up: Updated => {
+      val selectedBefore = selectEntity(up.before)
+      val selectedAfter = selectEntity(up.after)
       if(selectedBefore)
         if(!selectedAfter)
-          Some(Removed(before))
+          Some(new Removed(up.before))
         else
           Some(up)
       else
         if(selectedAfter)
-          Some(Inserted(after))
+          Some(new Inserted(up.after))
         else
           None
     }
-    case rem @ Removed(entity) => if(selectEntity(entity)) Some(rem) else None
+    case rem: Removed => if(selectEntity(rem.entity)) Some(rem) else None
   }
 }
 

@@ -21,7 +21,7 @@ class EntityChangeTests extends mutable.Specification {
 
     val uA = Updated(e1, e2, fcsA)
     val uB = Updated(e2, e3, fcsB)
-    val uAB = uA.merge(uB).changes
+    val uAB = uA.merge(uB).get.changes
 
     "take unilateral changes" in {
       uAB.get(1) ==== Some(fc1T)
@@ -34,6 +34,10 @@ class EntityChangeTests extends mutable.Specification {
 
     "remove canceled out changes" in {
       uAB.get(0) ==== None
+    }
+
+    "return None when all changes cancel" in {
+      Updated(e1, e2, Map(0 -> fc0F)).merge(Updated(e2, e3, Map(0 -> fc0T))) ==== None
     }
   }
 }

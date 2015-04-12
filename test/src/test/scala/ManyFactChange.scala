@@ -33,7 +33,7 @@ class FactChangeTests extends mutable.Specification {
       merged.keySet.min ==== 1
       merged.keySet.max ==== 8
     }
-    "return none when all values cancel" in {
+    "return None when all values cancel" in {
       FactChange(Map(1 -> false)).merge(FactChange(Map(1 -> true))) ==== None
     }
   }

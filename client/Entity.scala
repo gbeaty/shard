@@ -4,13 +4,6 @@ import sync._
 
 case class EntityId(id: Long) extends AnyVal
 
-sealed trait EntityChange {
-  val id: EntityId
-}
-case class Inserted(id: EntityId, facts: EntityFacts) extends EntityChange
-case class Updated(id: EntityId, changes: EntityChanges) extends EntityChange
-case class Removed(id: EntityId) extends EntityChange
-
 trait EntityData[S <: EntityData[S,O,M],O[_],M[_]] {
   val underlying: Map[AttrId,Any]
   def constMany[V]: M[V]
