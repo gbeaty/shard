@@ -53,6 +53,7 @@ object Sync extends Build {
     )
   )
   lazy val browser = subproject("browser", ScalaJSPlugin.projectSettings).dependsOn(client).enablePlugins(ScalaJSPlugin)
+  scalaJSStage in Global := FastOptStage
 
   override def rootProject = Some(test)
 }
