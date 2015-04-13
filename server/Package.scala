@@ -8,8 +8,10 @@ package object server {
   type One = Cardinality.one.type
   type Many = Cardinality.many.type
 
-  type EntityChange = sync.EntityChange[FinalId]
-  type Inserted = sync.Inserted[FinalId]
-  type Updated = sync.Updated[FinalId]
-  type Removed = sync.Removed[FinalId]
+  type EntityChange = sync.EntityChange[FinalId,datomisca.Entity]
+  type Inserted = sync.Inserted[FinalId,datomisca.Entity]
+  type Updated = sync.Updated[FinalId,datomisca.Entity]
+  type Removed = sync.Removed[FinalId,datomisca.Entity]
+
+  implicit def toEntityId(fid: FinalId) = new EntityId(fid.underlying)
 }

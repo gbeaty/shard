@@ -1,11 +1,11 @@
 package sync
 
-trait EntityChange[I] {
+trait EntityChange[I,D] {
   val id: I
 }
-case class Inserted[I](id: I) extends EntityChange[I]
-case class Updated[I](id: I, changes: Map[Int,FactChange[_]]) extends EntityChange[I] {
-  def merge(next: Updated[I]) = {
+case class Inserted[I,D](id: I, data: D) extends EntityChange[I,D]
+case class Updated[I,D](id: I, changes: Map[Int,FactChange[_]]) extends EntityChange[I,D] {
+  def merge(next: Updated[I,D]) = {
     val prevChanges = changes.asInstanceOf[Map[Int,FactChange[Any]]]
     val nextChanges = next.changes.asInstanceOf[Map[Int,FactChange[Any]]]
     val res = nextChanges.foldLeft(prevChanges) { (res,kv) =>
@@ -18,7 +18,7 @@ case class Updated[I](id: I, changes: Map[Int,FactChange[_]]) extends EntityChan
     if(res.size == 0)
       None
     else    
-      Some(Updated(id, res))
+      Some(Updated[I,D](id, res))
   }
 }
-case class Removed[I](id: I) extends EntityChange[I]
+case class Removed[I,D](id: I) extends EntityChange[I,D]

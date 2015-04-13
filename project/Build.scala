@@ -3,6 +3,9 @@ package sync
 import sbt._
 import Keys._
 
+import org.scalajs.sbtplugin.ScalaJSPlugin
+import org.scalajs.sbtplugin.ScalaJSPlugin.autoImport._
+
 object Sync extends Build {
 
   val appVersion = "0.0.1"
@@ -23,10 +26,10 @@ object Sync extends Build {
 
   scalacOptions in Test ++= Seq("-Yrangepos")
 
-  def project(name: String) = sbt.Project(
+  def project(name: String, settings: Seq[sbt.Def.Setting[_]] = Defaults.defaultSettings) = sbt.Project(
     name,
     base = file(name),
-    settings = Defaults.defaultSettings ++ Seq(
+    settings = settings ++ Seq(
       scalaVersion := scala,
       resolvers ++= commonResolvers
     )    
@@ -34,7 +37,8 @@ object Sync extends Build {
 
   lazy val core = project("core")
 
-  def subproject(name: String) = project(name).dependsOn(core)
+  def subproject(name: String, settings: Seq[sbt.Def.Setting[_]] = Defaults.defaultSettings) =
+    project(name, settings).dependsOn(core)
 
   lazy val client = subproject("client")
   lazy val server = subproject("server").settings(
@@ -48,6 +52,7 @@ object Sync extends Build {
       "org.scalacheck" %% "scalacheck" % "1.12.2" % "test"
     )
   )
+  lazy val browser = subproject("browser", ScalaJSPlugin.projectSettings).dependsOn(client).enablePlugins(ScalaJSPlugin)
 
   override def rootProject = Some(test)
 }
