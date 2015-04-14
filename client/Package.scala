@@ -1,8 +1,8 @@
 package sync
 
 package object client {
-  type EntityChange = sync.EntityChange[EntityId,Long]
-  type Inserted = sync.Inserted[EntityId,Long]
-  type Updated = sync.Updated[EntityId,Long]
-  type Removed = sync.Removed[EntityId,Long]
+  type EntityChange = sync.EntityChange[Long]
+  type Inserted = sync.Inserted[Long]
+  type Updated = sync.Updated[Long]
+  type Removed = sync.Removed[Long]
 }

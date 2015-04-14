@@ -1,4 +1,4 @@
-package sync.browser
+package sync.client
 
 import scala.scalajs.js._
 

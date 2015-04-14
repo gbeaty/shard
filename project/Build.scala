@@ -40,11 +40,13 @@ object Sync extends Build {
   def subproject(name: String, settings: Seq[sbt.Def.Setting[_]] = Defaults.defaultSettings) =
     project(name, settings).dependsOn(core)
 
-  lazy val client = subproject("client")
   lazy val server = subproject("server").settings(
-    libraryDependencies ++= Seq(datomic,datomisca)
+    libraryDependencies ++= Seq(datomic, datomisca, "com.lihaoyi" %% "upickle" % "0.2.8")
   ).dependsOn(client)
-  lazy val play = subproject("play").dependsOn(client, server)
+  lazy val play = subproject("play").dependsOn(client, server).settings(
+    libraryDependencies ++= Seq(
+    )
+  )
   lazy val test = subproject("test").dependsOn(core, client, play).settings(
     libraryDependencies ++= Seq(
       datomic,
@@ -52,7 +54,11 @@ object Sync extends Build {
       "org.scalacheck" %% "scalacheck" % "1.12.2" % "test"
     )
   )
-  lazy val browser = subproject("browser", ScalaJSPlugin.projectSettings).dependsOn(client).enablePlugins(ScalaJSPlugin)
+  lazy val client = subproject("client", ScalaJSPlugin.projectSettings)
+    .enablePlugins(ScalaJSPlugin)
+    .settings(
+      libraryDependencies ++= Seq("com.lihaoyi" %%% "upickle" % "0.2.8")
+    )
   scalaJSStage in Global := FastOptStage
 
   override def rootProject = Some(test)

@@ -5,7 +5,7 @@ import sync.client._
 
 import datomisca._
 
-case class Changeset(beforeDb: Database, afterDb: Database, changes: Map[FinalId,EntityChange])
+case class Changeset(dbBefore: Database, dbAfter: Database, changes: Map[FinalId,EntityChange])
 
 object Changeset {
   def apply(reports: Seq[TxReport]): Changeset = {
@@ -14,8 +14,8 @@ object Changeset {
     Changeset(
       dbBefore,
       dbAfter,
-      reports.map(EntityChange(_)).flatten.foldLeft(Map[FinalId,EntityChange]()) { (res, entityChange) =>
-        val id = entityChange.id
+      reports.map(EntityChange(_)).flatten.foldLeft(Map[FinalId,EntityChange]()) { (res, kv) =>
+        val (id, entityChange) = kv
         (res.get(id), entityChange) match {
           case (None, ec) => res + (id -> entityChange)
           case (Some(ins: Inserted), rem: Removed) => res
@@ -34,31 +34,4 @@ object Changeset {
 case class ChangesetPoller(implicit conn: Connection) {
   private val txReportQueue = conn.txReportQueue
   def poll = Changeset(txReportQueue.drain)
-}
-
-object EntityChange {
-  def entityExists(entity: datomisca.Entity) = entity.keySet.size > 0
-
-  def apply(txReport: TxReport): Seq[EntityChange] = {
-    val dbBefore = txReport.dbBefore
-    val dbAfter = txReport.dbAfter
-
-    txReport.txData.groupBy(_.id).map { kv =>
-      val id = new FinalId(kv._1)
-      val datoms = kv._2
-      val entityBefore = dbBefore.entity(id)
-      val entityAfter = dbAfter.entity(id)
-
-      if(!entityExists(entityBefore))
-        new Inserted(id,entityAfter)
-      else
-        if(entityExists(entityAfter))
-          new Updated(id, datoms.groupBy(_.attrId).map { kv =>
-            val (attrId, datoms) = kv
-            (attrId -> FactChange(datoms.map(datom => (datom.value -> datom.added)).toMap))
-          }.toMap)
-        else
-          new Removed(id)
-    }.toSeq
-  }
 }

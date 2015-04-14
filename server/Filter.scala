@@ -2,35 +2,44 @@ package sync.server
 
 import datomisca._
 
-trait Selector {
+trait Filter extends Selector {  
+  def filter(dbBefore: Database, dbAfter: Database, id: FinalId, change: EntityChange): Option[EntityChange]
+
+  def select(changeset: Changeset) = changeset.changes.flatMap { kv =>
+    val (id, change) = kv
+    filter(changeset.dbBefore, changeset.dbAfter, id, change).map(id -> _)
+  }.toMap
+}
+
+trait EntityFilter extends Filter {
   def refresh(implicit db: Database): Set[Entity]
   def selectEntity(entity: Entity): Boolean
 
-  def apply(dbBefore: Database, dbAfter: Database, change: EntityChange) = change match {
-    case in: Inserted => if(selectEntity(dbAfter.entity(in.id))) Some(in) else None
+  def filter(dbBefore: Database, dbAfter: Database, id: FinalId, change: EntityChange) = change match {
+    case in: Inserted => if(selectEntity(dbAfter.entity(id))) Some(in) else None
     case up: Updated => {
-      val entityBefore = dbBefore.entity(up.id)
-      val entityAfter = dbAfter.entity(up.id)
+      val entityBefore = dbBefore.entity(id)
+      val entityAfter = dbAfter.entity(id)
       val selectedBefore = selectEntity(entityBefore)
       val selectedAfter = selectEntity(entityAfter)
       if(selectedBefore)
         if(!selectedAfter)
-          Some(new Removed(up.id))
+          Some(new Removed())
         else
           Some(up)
       else
         if(selectedAfter)
-          Some(new Inserted(up.id, entityAfter))
+          Some(new Inserted(entityAfter))
         else
           None
     }
-    case rem: Removed => if(selectEntity(dbBefore.entity(rem.id))) Some(rem) else None
+    case rem: Removed => if(selectEntity(dbBefore.entity(id))) Some(rem) else None
   }
 }
 
-class AttrValSelector[DD <: AnyRef,V]
+class AttrValEntityFilter[DD <: AnyRef,V]
   (val attr: Attribute[DD,One], val value: V)
-  (implicit val r: Attribute2EntityReaderInj[DD,One,V], val tdd: ToDatomicCast[V]) extends Selector {
+  (implicit val r: Attribute2EntityReaderInj[DD,One,V], val tdd: ToDatomicCast[V]) extends EntityFilter {
     def selectEntity(entity: Entity) = entity.get(attr) == Some(value)
 
     final val query = Query("""[
@@ -42,7 +51,7 @@ class AttrValSelector[DD <: AnyRef,V]
       Datomic.q(query, db, value).map(id => db.entity(id.asInstanceOf[Long])).toSet
 }
 
-class ReverseAttrSelector(parent: FinalId, attr: Attribute[DatomicRef.type,One]) extends Selector {
+class ReverseAttrEntityFilter(parent: FinalId, attr: Attribute[DatomicRef.type,One]) extends EntityFilter {
   val revAttr = attr.reverse
   def selectEntity(entity: Entity) = entity.get(attr) == Some(parent.underlying)
   def refresh(implicit db: Database) =
