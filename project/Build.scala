@@ -43,11 +43,12 @@ object Sync extends Build {
   lazy val server = subproject("server").settings(
     libraryDependencies ++= Seq(datomic, datomisca, "com.lihaoyi" %% "upickle" % "0.2.8")
   ).dependsOn(client)
-  lazy val play = subproject("play").dependsOn(client, server).settings(
+  lazy val playClient = subproject("play-client").dependsOn(client, server).settings(
     libraryDependencies ++= Seq(
+      // "play" %% "play" % "2.4.0"
     )
   )
-  lazy val test = subproject("test").dependsOn(core, client, play).settings(
+  lazy val test = subproject("test").dependsOn(core, client, playClient).settings(
     libraryDependencies ++= Seq(
       datomic,
       "org.specs2" %% "specs2-core" % "3.4" % "test",

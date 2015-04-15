@@ -1,8 +1,6 @@
 package sync.client
 
-case class Version(v: Long) extends AnyVal
-
 trait Entities {
-  def version: Version
+  def version: Long
   def applyChanges(cs: Changeset)
 }

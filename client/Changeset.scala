@@ -1,4 +1,5 @@
 package sync.client
 
-case class Changeset
-  (beforeDb: Long, afterDb: Long, changes: Map[Long,EntityChange])
+import scalajs._
+
+class Changeset(beforeDb: Long, afterDb: Long, changes: js.Dictionary[EntityChange])

@@ -2,9 +2,10 @@ package sync.client
 
 import sync._
 
-trait Entity {
-  val id: Long
+import scalajs._
 
-  def get[V](attr: OneAttrId[V]): Option[V]
-  def get[V](attr: ManyAttrId[V]): Set[V]
+class Entity(val id: String, val datas: js.Dictionary[js.Any]) {
+  def get[A](attrId: OneAttrId[A]) = datas.get(attrId.id.toString).map(_.asInstanceOf[A])
+  def get[A](attrId: ManyAttrId[A]) =
+    datas.get(attrId.id.toString).map(_.asInstanceOf[js.Array[A]]).getOrElse(js.Array[A]())
 }

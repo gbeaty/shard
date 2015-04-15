@@ -22,17 +22,17 @@ trait Selector {
 case class Projector(attrs: Set[Attribute[_,_<:Cardinality]]) {
   def attrIds(implicit db: Database) = attrs.map(attr => db.entity(attr.ident).id)
 
-  def apply(changeset: Changeset) = client.Changeset(
+  def apply(changeset: Changeset) = new client.Changeset(
     changeset.dbBefore.basisT,
     changeset.dbAfter.basisT,
-    changeset.changes.flatMap { kv =>
+    scalajs.js.Dictionary(changeset.changes.toSeq.flatMap { kv =>
       val (id, change) = kv
       (change match {
         case Inserted(entity) => Some(new client.Removed())
         case Updated(factChanges) => Some(new client.Removed())
         case Removed() => Some(new client.Removed())
-      }).map(id.underlying -> _)
-    }.toMap
+      }).map(id.underlying.toString -> _)
+    }: _*)
   )
 }
 
