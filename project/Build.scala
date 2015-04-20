@@ -1,4 +1,4 @@
-package sync
+package shard
 
 import sbt._
 import Keys._
@@ -6,7 +6,7 @@ import Keys._
 import org.scalajs.sbtplugin.ScalaJSPlugin
 import org.scalajs.sbtplugin.ScalaJSPlugin.autoImport._
 
-object Sync extends Build {
+object Shard extends Build {
 
   val appVersion = "0.0.1"
   val scala = "2.11.6"

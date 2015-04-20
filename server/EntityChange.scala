@@ -1,11 +1,11 @@
-package sync.server
+package shard.server
 
-import sync._
-import sync.client._
+import shard._
+import shard.client._
 
 import datomisca._
 
-object EntityChange {
+/*object EntityChange {
   def entityExists(entity: datomisca.Entity) = entity.keySet.size > 0
 
   def apply(txReport: TxReport): Map[FinalId,EntityChange] = {
@@ -30,4 +30,4 @@ object EntityChange {
           new Removed())
     }.toMap
   }
-}
+}*/

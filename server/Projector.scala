@@ -1,11 +1,11 @@
-package sync.server
+package shard.server
 
-import sync._
+import shard._
 
 import datomisca._
 import upickle._
 
-trait Selector {
+/*trait Selector {
   def select(changes: Changeset): Map[FinalId,EntityChange]
 
   def apply(changeset: Changeset) = changeset.copy(changes = select(changeset))
@@ -39,3 +39,4 @@ case class Projector(attrs: Set[Attribute[_,_<:Cardinality]]) {
 /*object JSONProjector extends Projector[String] {
   def apply(cs: server.Changeset) = 
 }*/
+*/

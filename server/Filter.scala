@@ -1,7 +1,8 @@
-package sync.server
+package shard.server
 
 import datomisca._
 
+/*
 trait Filter extends Selector {  
   def filter(dbBefore: Database, dbAfter: Database, id: FinalId, change: EntityChange): Option[EntityChange]
 
@@ -57,3 +58,4 @@ class ReverseAttrEntityFilter(parent: FinalId, attr: Attribute[DatomicRef.type,O
   def refresh(implicit db: Database) =
     db.entity(parent).read(revAttr)(Attribute2EntityReaderCast.attr2EntityReaderCastManyIdOnly).map(db.entity(_))
 }
+*/

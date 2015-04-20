@@ -1,6 +1,6 @@
-package sync.client
+package shard.client
 
-trait Entities {
+/*trait Entities {
   def version: Long
   def applyChanges(cs: Changeset)
-}
+}*/

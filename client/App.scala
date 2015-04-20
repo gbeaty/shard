@@ -1,4 +1,4 @@
-package sync.client
+package shard.client
 
 import scala.scalajs.js._
 

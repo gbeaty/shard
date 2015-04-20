@@ -1,10 +1,23 @@
-package sync.server
+package shard.server
 
-import sync._
+import shard._
 
 import datomisca._
 
-object AttrId {
+object Attr {
+  def fromId(attrId: Long)(implicit db: Database): Option[Attr] = fromEntity(db.entity(attrId))
+
+  def fromEntity(attr: datomisca.Entity) =
+    (attr.getAs[Keyword](Attribute.ident), attr.getAs[String](Attribute.cardinality)) match {
+      case (Some(ident), Some(card)) =>
+        if(card == ":db.cardinality/one") 
+          Some(new OneAttr(ident))
+        else
+          Some(new ManyAttr(ident))
+      case _ => None
+    }
+}
+/*object AttrId {
   def apply(id: Int)(implicit db: Database) =
     if(db.entity(id).get(Attribute.cardinality) == Cardinality.one.keyword)
       OneAttrId[Any](id)
@@ -19,4 +32,4 @@ object AttrId {
       else
         ManyAttrId[T](id)
       }
-}
+}*/

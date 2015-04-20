@@ -1,3 +1,3 @@
-package object sync {
+package object shard {
   
 }
