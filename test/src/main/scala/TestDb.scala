@@ -1,4 +1,4 @@
-package sync
+package shard
 
 import datomisca._
 import datomisca.executioncontext.ExecutionContextHelper._

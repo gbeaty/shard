@@ -19,12 +19,5 @@ package object server extends shard.State {
     def getAny(attrIdent: datomisca.Keyword) = underlying.get(attrIdent)
   }
 
-  /*implicit def datomToChange(datom: Datom)(implicit db: Database) =
-    if(datom.added)
-      new Assert(datom.id, )*/
-
-  /*type EntityChange = sync.EntityChange[datomisca.Entity]
-  type Inserted = sync.Inserted[datomisca.Entity]
-  type Updated = sync.Updated[datomisca.Entity]
-  type Removed = sync.Removed[datomisca.Entity]*/
+  implicit def toShardEntity(dentity: datomisca.Entity) = Entity(dentity)
 }

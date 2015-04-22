@@ -5,29 +5,17 @@ import shard.client._
 
 import datomisca._
 
-/*object EntityChange {
+object EntityChange {
   def entityExists(entity: datomisca.Entity) = entity.keySet.size > 0
 
-  def apply(txReport: TxReport): Map[FinalId,EntityChange] = {
-    val dbBefore = txReport.dbBefore
-    val dbAfter = txReport.dbAfter
-
-    txReport.txData.groupBy(_.id).map { kv =>
-      val id = new FinalId(kv._1)
-      val datoms = kv._2
-      val entityBefore = dbBefore.entity(id)
-      val entityAfter = dbAfter.entity(id)
-
-      id -> (if(!entityExists(entityBefore))
-        new Inserted(entityAfter)
-      else
-        if(entityExists(entityAfter))
-          new Updated(datoms.groupBy(_.attrId).map { kv =>
-            val (attrId, datoms) = kv
-            (attrId -> FactChange(datoms.map(datom => (datom.value -> datom.added)).toMap))
-          }.toMap)
-        else
-          new Removed())
-    }.toMap
+  def apply(dbBefore: Database, dbAfter: Database, eid: Long) = {
+    val entityBefore = dbBefore.entity(eid)
+    val entityAfter = dbAfter.entity(eid)
+    (entityExists(entityBefore), entityExists(entityAfter)) match {
+      case (false, false) => None
+      case (false, true) => Some(new Inserted(entityAfter))
+      case (true, false) => Some(new Removed(entityBefore))
+      case (true, true) => Some(new Updated(entityAfter))
+    }
   }
-}*/
+}

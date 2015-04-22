@@ -1,7 +1,7 @@
-package sync.test
+package shard.test
 
-import sync._
-import sync.client._
+import shard._
+import shard.client._
 
 import scalajs._
 
