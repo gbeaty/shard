@@ -10,7 +10,17 @@ package object server {
   type Version = datomisca.Database
 
   implicit class DatomicState(val db: datomisca.Database) extends State {
-    def lookup[A <: Attr](id: Long, attr: A) = attr.castReturn(None)
+    def lookup[A <: Attr](id: Long, attr: A) = attr.castReturn({
+      val res = db.entity(id).entity.get(attr.id)
+      attr match {
+        case attr: OneAttr[A#Value] => if(res == null) None else Some(res)
+        case attr: ManyAttr[A#Value] =>
+          if(res == null)
+            Set[Object]()
+          else
+            scala.collection.JavaConversions.iterableAsScalaIterable(res.asInstanceOf[java.util.Collection[Object]]).toSet
+      }
+    })
   }
 
   implicit def toAttr[DD <: AnyRef,C <: datomisca.Cardinality,T]

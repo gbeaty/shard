@@ -18,8 +18,7 @@ case class Projector(attrs: Set[Attribute[_,_<:Cardinality]]) {
 
   def attrIds(implicit db: Database) = attrs.map(attr => db.entity(attr.ident).id)
 
-  // def commonAttrs(entity: datomisca.Entity, id: Long) = entity.keySet.intersect
-  // FIX ME: Projected entity changes don't always match their selections!
+  def hasAttr(db: datomisca.Database, id: Long) = db.entity(id).keySet.intersect(attrNames).size > 0
 
   def apply(changeset: DbChangeset) = new ServerChangeset(
     changeset.dbBefore.basisT,
@@ -27,15 +26,26 @@ case class Projector(attrs: Set[Attribute[_,_<:Cardinality]]) {
     changeset.changes.toSeq.flatMap { kv =>
       val (eid, change) = kv
       (change match {
-        case ins: Inserted => Some(ins)
+        case ins: Inserted => {
+          val res = ins.data.filter(av => attrNames.contains(av._1))
+          if(res.size == 0)
+            None
+          else
+            Some(new Inserted(ins.id, res))
+        }
         case up: Updated => {
-          val rem = up.changes.filter(kv => attrNames.contains(kv._1))
-          if(rem.size > 0)
-            Some(new Updated(eid, rem))
+          val res = up.changes.filter(kv => attrNames.contains(kv._1))
+          if(res.size == 0)
+            None
+          else {
+            None // FIX ME
+          }
+        }
+        case rem: Removed =>
+          if(hasAttr(changeset.dbBefore, rem.id))
+            Some(rem)
           else
             None
-        }
-        case rem: Removed => Some(rem)
       }).map(eid -> _)
     }.toMap
   )
