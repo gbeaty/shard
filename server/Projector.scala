@@ -26,19 +26,12 @@ case class Projector(attrs: Set[Attribute[_,_<:Cardinality]]) {
     changeset.changes.toSeq.flatMap { kv =>
       val (eid, change) = kv
       (change match {
-        case ins: Inserted => {
-          val res = ins.data.filter(av => attrNames.contains(av._1))
-          if(res.size == 0)
-            None
-          else
-            Some(new Inserted(ins.id, res))
-        }
-        case up: Updated => {
+        case up: Upserted => {
           val res = up.changes.filter(kv => attrNames.contains(kv._1))
           if(res.size == 0)
             None
           else {
-            None // FIX ME
+            Some(new Upserted(eid, res))
           }
         }
         case rem: Removed =>

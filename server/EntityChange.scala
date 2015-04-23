@@ -13,9 +13,9 @@ object EntityChange {
     val entityAfter = dbAfter.entity(eid)
     (entityExists(entityBefore), entityExists(entityAfter)) match {
       case (false, false) => None
-      case (false, true) => Some(new Inserted(eid, entityAfter.toMap))
+      case (false, true) => Some(new Upserted(eid))
       case (true, false) => Some(new Removed(eid))
-      case (true, true) => Some(new Updated(eid))
+      case (true, true) => Some(new Upserted(eid))
     }
   }
 }
