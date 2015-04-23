@@ -7,12 +7,6 @@ import scalajs._
 import datomisca._
 import upickle._
 
-trait Selector {
-  def select(changes: DbChangeset): Map[Long,EntityChange]
-
-  def apply(cs: DbChangeset) = new DbChangeset(cs.dbBefore, cs.dbAfter, select(cs))
-}
-
 case class Projector(attrs: Set[Attribute[_,_<:Cardinality]]) {
   val attrNames = attrs.map(_.ident.toString)
 
@@ -31,11 +25,11 @@ case class Projector(attrs: Set[Attribute[_,_<:Cardinality]]) {
           if(res.size == 0)
             None
           else {
-            Some(new Upserted(eid, res))
+            EntityChange.filter(hasAttr(changeset.dbBefore, eid), hasAttr(changeset.dbAfter, eid), eid, res)
           }
         }
         case rem: Removed =>
-          if(hasAttr(changeset.dbBefore, rem.id))
+          if(hasAttr(changeset.dbBefore, eid))
             Some(rem)
           else
             None
