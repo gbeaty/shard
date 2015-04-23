@@ -11,9 +11,9 @@ object Attr {
     (attr.getAs[Keyword](Attribute.ident), attr.getAs[String](Attribute.cardinality)) match {
       case (Some(ident), Some(card)) =>
         if(card == ":db.cardinality/one") 
-          Some(new OneAttr[Any](ident))
+          Some(new OneAttr[Any](ident.toString))
         else
-          Some(new ManyAttr[Any](ident))
+          Some(new ManyAttr[Any](ident.toString))
       case _ => None
     }
 }

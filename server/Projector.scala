@@ -1,42 +1,42 @@
 package shard.server
 
 import shard._
+import shard.client
 
+import scalajs._
 import datomisca._
 import upickle._
 
-/*trait Selector {
-  def select(changes: Changeset): Map[FinalId,EntityChange]
+trait Selector {
+  def select(changes: DbChangeset): Map[Long,EntityChange]
 
-  def apply(changeset: Changeset) = changeset.copy(changes = select(changeset))
+  def apply(cs: DbChangeset) = new DbChangeset(cs.dbBefore, cs.dbAfter, select(cs))
 }
-
-/*case class AttrFilter(attrs: Set[Attribute[_,_<:Cardinality]]) extends Filter {
-  def apply(change: EntityChange) = change match {
-    case Inserted(id, entity) =>
-    case Updated(id, changes) =>
-    case Removed(id) =>
-  }
-}*/
 
 case class Projector(attrs: Set[Attribute[_,_<:Cardinality]]) {
+  val attrNames = attrs.map(_.ident.toString)
+
   def attrIds(implicit db: Database) = attrs.map(attr => db.entity(attr.ident).id)
 
-  def apply(changeset: Changeset) = new client.Changeset(
+  // def commonAttrs(entity: datomisca.Entity, id: Long) = entity.keySet.intersect
+  // FIX ME: Projected entity changes don't always match their selections!
+
+  def apply(changeset: DbChangeset) = new ServerChangeset(
     changeset.dbBefore.basisT,
     changeset.dbAfter.basisT,
-    scalajs.js.Dictionary(changeset.changes.toSeq.flatMap { kv =>
-      val (id, change) = kv
+    changeset.changes.toSeq.flatMap { kv =>
+      val (eid, change) = kv
       (change match {
-        case Inserted(entity) => Some(new client.Removed())
-        case Updated(factChanges) => Some(new client.Removed())
-        case Removed() => Some(new client.Removed())
-      }).map(id.underlying.toString -> _)
-    }: _*)
+        case ins: Inserted => Some(ins)
+        case up: Updated => {
+          val rem = up.changes.filter(kv => attrNames.contains(kv._1))
+          if(rem.size > 0)
+            Some(new Updated(eid, rem))
+          else
+            None
+        }
+        case rem: Removed => Some(rem)
+      }).map(eid -> _)
+    }.toMap
   )
 }
-
-/*object JSONProjector extends Projector[String] {
-  def apply(cs: server.Changeset) = 
-}*/
-*/
