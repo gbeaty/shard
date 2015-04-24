@@ -1,7 +1,5 @@
 package shard
 
-import shard.client._
-
 import datomisca._
 
 package object server {

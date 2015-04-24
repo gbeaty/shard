@@ -42,7 +42,7 @@ object Shard extends Build {
 
   lazy val server = subproject("server").settings(
     libraryDependencies ++= Seq(datomic, datomisca, "com.lihaoyi" %% "upickle" % "0.2.8")
-  ).dependsOn(client)
+  )
   lazy val playClient = subproject("play-client").dependsOn(client, server).settings(
     libraryDependencies ++= Seq(
       // "play" %% "play" % "2.4.0"
