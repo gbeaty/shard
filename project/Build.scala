@@ -26,40 +26,35 @@ object Shard extends Build {
 
   scalacOptions in Test ++= Seq("-Yrangepos")
 
-  def project(name: String, settings: Seq[sbt.Def.Setting[_]] = Defaults.defaultSettings) = sbt.Project(
-    name,
-    base = file(name),
-    settings = settings ++ Seq(
+  lazy val core = crossProject.in(file("core")).
+    settings(
+      name := "core",
+      version := appVersion,
       scalaVersion := scala,
       resolvers ++= commonResolvers
-    )    
-  )
-
-  lazy val core = project("core")
-
-  def subproject(name: String, settings: Seq[sbt.Def.Setting[_]] = Defaults.defaultSettings) =
-    project(name, settings).dependsOn(core)
-
-  lazy val server = subproject("server").settings(
-    libraryDependencies ++= Seq(datomic, datomisca, "me.chrons" %% "boopickle" % "0.1.2")
-  )
-  lazy val playClient = subproject("play-client").dependsOn(client, server).settings(
-    libraryDependencies ++= Seq(
-      // "play" %% "play" % "2.4.0"
-    )
-  )
-  lazy val test = subproject("test").dependsOn(core, client, playClient).settings(
-    libraryDependencies ++= Seq(
-      datomic,
-      "org.specs2" %% "specs2-core" % "3.4" % "test",
-      "org.scalacheck" %% "scalacheck" % "1.12.2" % "test"
-    )
-  )
-  lazy val client = subproject("client", ScalaJSPlugin.projectSettings)
-    .enablePlugins(ScalaJSPlugin)
-    .settings(
+    ).jvmSettings(
+      libraryDependencies ++= Seq(datomic, datomisca, "me.chrons" %% "boopickle" % "0.1.2")
+    ).jsSettings(
       libraryDependencies ++= Seq("me.chrons" %%% "boopickle" % "0.1.2")
     )
+
+  lazy val jvm = core.jvm
+  lazy val js = core.js
+
+  lazy val test = sbt.Project(
+    "test",
+    file("test"),
+    settings = settings ++ Seq(
+      scalaVersion := scala,
+      resolvers ++= commonResolvers,
+      libraryDependencies ++= Seq(
+        datomic,
+        // "org.specs2" %% "specs2-shared" % "3.4" % "test",
+        "org.scalacheck" %% "scalacheck" % "1.12.2" % "test"
+      )
+    )
+  ).dependsOn(jvm, js)
+
   scalaJSStage in Global := FastOptStage
 
   override def rootProject = Some(test)
