@@ -2,18 +2,21 @@ package shard.server
 
 import shard._
 
+import boopickle._
 import datomisca._
 
-object Attr {
-  def fromId(attrId: Long)(implicit db: Database) = fromEntity(db.entity(attrId))
+class AttrType[DD,Value](implicit val pickler: Pickler[Value])
 
-  def fromEntity(attr: datomisca.Entity) =
+object Attr {
+  def fromId[V](attrId: Long)(implicit db: Database) = fromEntity[V](db.entity(attrId))
+
+  def fromEntity[V](attr: datomisca.Entity): Option[Attr { type Value = V }] =
     (attr.getAs[Keyword](Attribute.ident), attr.getAs[String](Attribute.cardinality)) match {
       case (Some(ident), Some(card)) =>
         if(card == ":db.cardinality/one") 
-          Some(new OneAttr[Any](ident.toString))
+          Some(new OneAttr[V](ident.toString))
         else
-          Some(new ManyAttr[Any](ident.toString))
+          Some(new ManyAttr[V](ident.toString))
       case _ => None
     }
 }

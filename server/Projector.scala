@@ -2,7 +2,6 @@ package shard.server
 
 import shard._
 import datomisca._
-import upickle._
 
 trait Projector {
   def project(changeset: DbChangeset): ServerChangeset
@@ -24,7 +23,7 @@ case class AttrProjector(attrs: Set[Attribute[_,_<:Cardinality]]) extends Projec
       val (eid, change) = kv
       (change match {
         case up: Upserted => {
-          val res = up.changes.filter(kv => attrNames.contains(kv._1))
+          val res = up.diffs.filter(kv => attrNames.contains(kv._1))
           if(res.size == 0)
             None
           else {

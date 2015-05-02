@@ -7,7 +7,7 @@ import datomisca._
 object EntityChange {
   def entityExists(entity: datomisca.Entity) = entity.keySet.size > 0
 
-  def filter(existed: Boolean, exists: Boolean, eid: Long, data: Map[String,Any] = Map[String,Any]()) =
+  def filter(existed: Boolean, exists: Boolean, eid: Long, data: Map[String,AttrDiff] = Map[String,AttrDiff]()) =
     (existed, exists) match {
       case (false, false) => None
       case (false, true) => Some(new Upserted(eid, data))

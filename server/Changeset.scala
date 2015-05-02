@@ -17,7 +17,8 @@ object DbChangeset {
       reports.map(_.txData).flatten.foldLeft(Map[Long,EntityChange]()) { (res, datom) =>
         val eid = datom.id
         def merge(up: Upserted) = Attr.fromId(datom.attrId)(dbAfter) match {
-          case Some(attr) => res + (eid -> up.add(attr, datom.value, datom.added)(dbBefore))
+          case Some(attr) => res + (eid -> up.add(attr, datom.value.asInstanceOf[attr.Value], datom.added)(dbBefore))
+          // FIX ME, log exceptions.
         }
         res.get(eid) match {
           case Some(ec: Upserted) => merge(ec)

@@ -24,7 +24,7 @@ trait EntityFilter extends Filter {
 
   def filter(dbBefore: Database, dbAfter: Database, eid: Long, change: EntityChange) = change match {
     case up: Upserted =>
-      EntityChange.filter(selectEntity(dbBefore.entity(eid)), selectEntity(dbAfter.entity(eid)), eid, up.changes)
+      EntityChange.filter(selectEntity(dbBefore.entity(eid)), selectEntity(dbAfter.entity(eid)), eid, up.diffs)
     case rem: Removed => if(selectEntity(dbBefore.entity(eid))) Some(rem) else None
   }
 }

@@ -41,7 +41,7 @@ object Shard extends Build {
     project(name, settings).dependsOn(core)
 
   lazy val server = subproject("server").settings(
-    libraryDependencies ++= Seq(datomic, datomisca, "com.lihaoyi" %% "upickle" % "0.2.8")
+    libraryDependencies ++= Seq(datomic, datomisca, "me.chrons" %% "boopickle" % "0.1.2")
   )
   lazy val playClient = subproject("play-client").dependsOn(client, server).settings(
     libraryDependencies ++= Seq(
@@ -58,7 +58,7 @@ object Shard extends Build {
   lazy val client = subproject("client", ScalaJSPlugin.projectSettings)
     .enablePlugins(ScalaJSPlugin)
     .settings(
-      libraryDependencies ++= Seq("com.lihaoyi" %%% "upickle" % "0.2.8")
+      libraryDependencies ++= Seq("me.chrons" %%% "boopickle" % "0.1.2")
     )
   scalaJSStage in Global := FastOptStage
 

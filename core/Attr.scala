@@ -3,43 +3,45 @@ package shard
 sealed trait Attr {
   type Value
   type Returned
-  type Diff
+  type Diff <: AttrDiff
   val id: String
   def castReturn(a: Any): Returned
-  def castDiff(a: Any): Diff
-  def diff(orig: Returned, diff: Diff, value: Value, added: Boolean): Option[Diff]
+  def castDiff(ad: Option[AttrDiff]): Option[Diff]
+  def diff(orig: Returned, diff: Option[Diff#Value], value: Value, added: Boolean): Option[Diff]
 }
-sealed trait AttrOf[V,R,D] extends Attr {
+class OneAttr[V](val id: String) extends Attr {
   type Value = V
-  type Returned = R
-  type Diff = D
-}
-class OneAttr[V](val id: String) extends AttrOf[V,Option[V],Option[V]] {
+  type Returned = Option[V]
+  type Diff = OneAttrDiff[V]
   def castReturn(a: Any) = a.asInstanceOf[Option[V]]
-  def castDiff(a: Any) = a.asInstanceOf[Option[V]]
-  def diff(orig: Option[V], diff: Option[V], value: V, added: Boolean) =
+  def castDiff(ad: Option[AttrDiff]) = ad.map(_.asInstanceOf[OneAttrDiff[V]])
+  def diff(orig: Option[V], diff: Option[Option[V]], value: V, added: Boolean) =
     if(!added)
       None
     else
-      if(orig.exists(_ == value)) None else Some(Some(value))
+      if(orig.exists(_ == value)) None else Some(OneAttrDiff(Some(value)))
 }
-class ManyAttr[V](val id: String) extends AttrOf[V,Set[V],Map[V,Boolean]] {
+class ManyAttr[V](val id: String) extends Attr {
+  type Value = V
+  type Returned = Set[V]
+  type Diff = ManyAttrDiff[V]
   def castReturn(a: Any) = a.asInstanceOf[Set[V]]
-  def castDiff(a: Any) = a.asInstanceOf[Map[V,Boolean]]
-  def diff(orig: Set[V], diff: Map[V,Boolean], value: V, added: Boolean) = {
-    val newDiff = if(added)
+  def castDiff(ad: Option[AttrDiff]) = ad.map(_.asInstanceOf[ManyAttrDiff[V]])
+  def diff(orig: Set[V], diff: Option[Map[V,Boolean]], value: V, added: Boolean) = {
+    val oldDiffMap = diff.getOrElse(Map[V,Boolean]())
+    val newDiffMap = if(added)
       if(orig.contains(value))
-        diff - value
+        oldDiffMap - value
       else
-        diff + (value -> true)
-    else 
+        oldDiffMap + (value -> true)
+    else
       if(orig.contains(value))
-        diff + (value -> false)
+        oldDiffMap + (value -> false)
       else
-        diff - value
+        oldDiffMap - value
 
-    if(newDiff.size == 0)
-      Some(newDiff)
+    if(newDiffMap.size == 0)
+      Some(ManyAttrDiff(newDiffMap))
     else
       None
   }

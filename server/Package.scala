@@ -1,8 +1,12 @@
 package shard
 
 import datomisca._
+import boopickle._
+import java.util.Date
+import java.net.URI
+import java.util.UUID
 
-package object server {
+package object server extends Picklers {
   type One = Cardinality.one.type
   type Many = Cardinality.many.type
   type Version = datomisca.Database
@@ -21,11 +25,10 @@ package object server {
     })
   }
 
-  implicit def toAttr[DD <: AnyRef,C <: datomisca.Cardinality,T]
-    (attr: datomisca.Attribute[DD,C])
-    (implicit r: Attribute2EntityReaderInj[DD,One,T]) =
-      if(attr.cardinality == datomisca.Cardinality.one)
-        new OneAttr[T](attr.ident.toString)
+  implicit def toAttr[DD,C <: Cardinality,Value]
+    (attr: Attribute[DD,C])(implicit at: AttrType[DD,Value]) =
+      if(attr.cardinality == Cardinality.one)
+        new OneAttr[Value](attr.ident.toString)
       else
-        new ManyAttr[T](attr.ident.toString)
+        new ManyAttr[Value](attr.ident.toString)
 }
