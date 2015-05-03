@@ -12,7 +12,7 @@ sealed trait EntityChange {
 }
 case class Upserted(id: Long, diffs: Map[String,AttrDiff]) extends EntityChange {
   def get[A <: Attr](attr: A) = attr.castDiff(diffs.get(attr.id)).map(_.value)
-  def add[A <: Attr,V](attr: A{type Value=V}, value: V, added: Boolean)(implicit s: State) =
+  def add[A <: Attr](attr: A)(value: attr.Value, added: Boolean)(implicit s: State) =
     attr.diff(s.lookup(id, attr), get(attr), value, added).map { diff =>
       new Upserted(id, diffs + (attr.id -> diff))
     }.getOrElse(this)

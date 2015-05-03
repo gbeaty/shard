@@ -25,10 +25,10 @@ package object server extends Picklers {
     })
   }
 
-  implicit def toAttr[DD,C <: Cardinality,Value]
+  /*implicit def toAttr[DD,C <: Cardinality,Value]
     (attr: Attribute[DD,C])(implicit at: AttrType[DD,Value]) =
       if(attr.cardinality == Cardinality.one)
         new OneAttr[Value](attr.ident.toString)
       else
-        new ManyAttr[Value](attr.ident.toString)
+        new ManyAttr[Value](attr.ident.toString)*/
 }

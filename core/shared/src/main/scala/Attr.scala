@@ -1,15 +1,18 @@
 package shard
 
+import boopickle._
+
 sealed trait Attr {
   type Value
   type Returned
   type Diff <: AttrDiff
   val id: String
+  val pickler: Pickler[Value]
   def castReturn(a: Any): Returned
   def castDiff(ad: Option[AttrDiff]): Option[Diff]
   def diff(orig: Returned, diff: Option[Diff#Value], value: Value, added: Boolean): Option[Diff]
 }
-class OneAttr[V](val id: String) extends Attr {
+class OneAttr[V](val id: String)(implicit val pickler: Pickler[V]) extends Attr {
   type Value = V
   type Returned = Option[V]
   type Diff = OneAttrDiff[V]
@@ -21,7 +24,7 @@ class OneAttr[V](val id: String) extends Attr {
     else
       if(orig.exists(_ == value)) None else Some(OneAttrDiff(Some(value)))
 }
-class ManyAttr[V](val id: String) extends Attr {
+class ManyAttr[V](val id: String)(implicit val pickler: Pickler[V]) extends Attr {
   type Value = V
   type Returned = Set[V]
   type Diff = ManyAttrDiff[V]
