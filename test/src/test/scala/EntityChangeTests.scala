@@ -1,42 +1,42 @@
-package sync
+package shard
 
-import sync.server._
-import datomisca._
+import shard.server._
+// import datomisca._
 
 import org.specs2._
 
 class EntityChangeTests extends mutable.Specification {
-  val db = new TestDb
-  val id = new FinalId(1)
+  val up = Upserted(0L)
+  val one = toOneAttr(Schema.One.long)
+  val many = toManyAttr(Schema.Many.long)
 
-  "Updated" should {
-    val fc0F = FactChange(Map(0 -> false))
-    val fc0T = FactChange(Map(0 -> true))
-    val fc1T = FactChange(Map(1 -> true))
-    val fcAB = fc0F.merge(fc1T).get
+  "Upserted" should {
 
-    val fcsA = Map(0 -> fc0F, 2 -> fc0F, 3 -> fc0F)
-    val fcsB = Map(0 -> fc0T, 1 -> fc1T, 3 -> fc1T)
-
-    val uA = Updated(id, fcsA)
-    val uB = Updated(id, fcsB)
-    val uAB = uA.merge(uB).get.changes
-
-    "take unilateral changes" in {
-      uAB.get(1) ==== Some(fc1T)
-      uAB.get(2) ==== Some(fc0F)
+    "Be created empty" in {
+      up.get(one) ==== None
+      up.get(many) ==== None
     }
 
-    "merge bilateral changes" in {
-      uAB.get(3) ==== Some(fcAB)
+    val added = up.set(one)(1L, true)
+    "Add single facts" in {      
+      added.get(one) ==== Some(Some(1L))
+      added.set(one)(0L, true).get(one) ==== Some(Some(0L))
     }
 
-    "remove canceled out changes" in {
-      uAB.get(0) ==== None
+    val retracted = added.set(one)(1L, false)
+    "Retract single facts" in {
+      retracted.get(one) ==== Some(None)
+      retracted.set(one)(1L, false).get(one) ==== Some(None)
+      up.set(one)(1L, false).get(one) ==== Some(None)
     }
 
-    "return None when all changes cancel" in {
-      Updated(id, Map(0 -> fc0F)).merge(Updated(id, Map(0 -> fc0T))) ==== None
+    val two = up.set(many)(1L, true).set(many)(2L, true)
+    "Add many facts" in {
+      two.get(many) ==== Some(Map(1L -> true, 2L -> true))
+    }
+
+    "Retract many facts" in {
+      two.set(many)(1L, false).set(many)(3L, false).get(many) ==== Some(Map(1L -> false, 2L -> true, 3L -> false))
     }
   }
 }

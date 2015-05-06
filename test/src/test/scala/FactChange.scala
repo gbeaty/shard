@@ -2,7 +2,7 @@ package sync
 
 import org.specs2._
 
-class FactChangeTests extends mutable.Specification {
+/*class FactChangeTests extends mutable.Specification {
 
   val vs = Map(
     1 -> (None,         Some(false)),
@@ -37,4 +37,4 @@ class FactChangeTests extends mutable.Specification {
       FactChange(Map(1 -> false)).merge(FactChange(Map(1 -> true))) ==== None
     }
   }
-}
+}*/

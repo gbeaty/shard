@@ -49,7 +49,7 @@ object Shard extends Build {
       resolvers ++= commonResolvers,
       libraryDependencies ++= Seq(
         datomic,
-        // "org.specs2" %% "specs2-shared" % "3.4" % "test",
+        "org.specs2" %% "specs2-core" % "3.6" % "test",
         "org.scalacheck" %% "scalacheck" % "1.12.2" % "test"
       )
     )
