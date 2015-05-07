@@ -7,7 +7,7 @@ import java.util.Date
 import java.net.URI
 import java.util.UUID
 
-object Pickle {
+object Picklers {
   implicit val attrDiffPickler = CompositePickler[AttrDiff]
     .addConcreteType[OneAttrDiff[Long]]
     .addConcreteType[ManyAttrDiff[Long]]
@@ -30,6 +30,6 @@ object Pickle {
 
   def changeset(cs: ServerChangeset) = boopickle.Pickle(cs.changes)
 }
-object Unpickle {
+object Unpicklers {
   import Pickle._
 }

@@ -5,8 +5,6 @@ import shard._
 import boopickle._
 import datomisca._
 
-class AttrType[DD,Value](implicit val pickler: Pickler[Value])
-
 object Attr {
   def fromId(attrId: Long)(implicit db: Database) = fromEntity(db.entity(attrId))
 
@@ -30,9 +28,9 @@ object Attr {
           case _ => None
         }).map { p =>
           if(card == ":db.cardinality/one")
-            new OneAttr(ident.toString)(p)
+            new OneAttr(ident.toString)//(p)
           else
-            new ManyAttr(ident.toString)(p)
+            new ManyAttr(ident.toString)//(p)
         }
       }
       case _ => None

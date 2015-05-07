@@ -11,7 +11,7 @@ package object server {
   type Many = Cardinality.many.type
   type Version = datomisca.Database
 
-  implicit class DatomicState(val db: datomisca.Database) extends State {
+  /*implicit class DatomicState(val db: datomisca.Database) extends State {
     def lookup[A <: Attr](id: Long, attr: A) = attr.castReturn({
       val res = db.entity(id).entity.get(attr.id)
       attr match {
@@ -23,20 +23,10 @@ package object server {
             scala.collection.JavaConversions.iterableAsScalaIterable(res.asInstanceOf[java.util.Collection[Object]]).toSet
       }
     })
-  }
+  }*/
 
-  implicit def toOneAttr[DD,V](attr: Attribute[DD,Cardinality.one.type])(implicit at: AttrType[DD,V]) =
-    new OneAttr[V](attr.ident.toString)(at.pickler)
-
-  implicit def toManyAttr[DD,V](attr: Attribute[DD,Cardinality.many.type])(implicit at: AttrType[DD,V]) =
-    new ManyAttr[V](attr.ident.toString)(at.pickler)
-
-  /*implicit def toAttr[DD,C <: Cardinality,V]
-    (attr: Attribute[DD,C])(implicit at: AttrType[DD,V]) =
-      if(attr.cardinality == Cardinality.one)
-        new OneAttr[V](attr.ident.toString)(at.pickler)
-      else
-        new ManyAttr[V](attr.ident.toString)(at.pickler)*/
+  implicit def toAttr[DD,C <: Cardinality,V,D[_] <: AttrDiff]
+    (attr: Attribute[DD,C])(implicit at: AttributeType[DD,V], ag: AttrGen[C,D]) = ag(attr)
 
   def toStringPickler[A] = new Pickler[A] {
     def pickle(obj: A)(implicit state: PickleState) = Pickler.StringPickler.pickle(obj.toString) 
@@ -49,20 +39,30 @@ package object server {
     def pickle(obj: Date)(implicit state: PickleState) = Pickler.LongPickler.pickle(obj.getTime)
   }
   
-  implicit val bigDecAttrType = new AttrType[SchemaType.bigdec.type,BigDecimal]
-  implicit val bigIntAttrType = new AttrType[SchemaType.bigint.type,BigInt]
-  implicit val booleanAttrType = new AttrType[SchemaType.boolean.type,Boolean]
-  implicit val bytesAttrType = new AttrType[SchemaType.bytes.type,Array[Byte]]
-  implicit val doubleAttrType = new AttrType[SchemaType.double.type,Double]
-  implicit val floatAttrType = new AttrType[SchemaType.float.type,Float]
-  implicit val instantAttrType = new AttrType[SchemaType.instant.type,Date]
-  implicit val keywordAttrType = new AttrType[SchemaType.keyword.type,Keyword]
-  implicit val longAttrType = new AttrType[java.lang.Long,Long]
-  implicit val refAttrType = new AttrType[SchemaType.ref.type,Long]
-  implicit val stringAttrType = new AttrType[SchemaType.string.type,String]
-  implicit val uriAttrType = new AttrType[SchemaType.uri.type,URI]
-  implicit val uuidAttrType = new AttrType[SchemaType.uuid.type,UUID]
+  class AttributeType[DD,V](implicit val pickler: Pickler[V])
+  implicit val bigDecAttributeType = new AttributeType[java.math.BigDecimal,BigDecimal]
+  implicit val bigIntAttributeType = new AttributeType[java.math.BigInteger,BigInt]
+  implicit val booleanAttributeType = new AttributeType[java.lang.Boolean,Boolean]
+  implicit val bytesAttributeType = new AttributeType[Array[Byte],Array[Byte]]
+  implicit val doubleAttributeType = new AttributeType[java.lang.Double,Double]
+  implicit val floatAttributeType = new AttributeType[java.lang.Float,Float]
+  implicit val instantAttributeType = new AttributeType[Date,Date]
+  implicit val keywordAttributeType = new AttributeType[Keyword,Keyword]
+  implicit val longAttributeType = new AttributeType[java.lang.Long,Long]
+  implicit val refAttributeType = new AttributeType[DatomicRef.type,Long]
+  implicit val stringAttributeType = new AttributeType[String,String]
+  implicit val uriAttributeType = new AttributeType[URI,URI]
+  implicit val uuidAttributeType = new AttributeType[UUID,UUID]
 
-  sealed class AttrCard[C <: Cardinality,A <: Attr]
-  // implicit val oneCard = new AttrCard[Cardinality.one.type,OneAttr]
+  sealed abstract class AttrGen[C <: Cardinality,D[_] <: AttrDiff] {
+    def apply[DD,V](attr: Attribute[DD,C])(implicit at: AttributeType[DD,V]): AttrOf[V,D[V]]
+  }
+  implicit val oneAttrGen = new AttrGen[Cardinality.one.type,OneAttrDiff] {
+    def apply[DD,V](attr: Attribute[DD,Cardinality.one.type])(implicit at: AttributeType[DD,V]) =
+      new OneAttr[V](attr.ident.toString)
+  }
+  implicit val manyAttrGen = new AttrGen[Cardinality.many.type,ManyAttrDiff] {
+    def apply[DD,V](attr: Attribute[DD,Cardinality.many.type])(implicit at: AttributeType[DD,V]) =
+      new ManyAttr[V](attr.ident.toString)
+  }
 }
