@@ -1,6 +1,20 @@
-package sync
+package shard.server
 
-import org.specs2._
+import org.scalacheck.Properties
+import org.scalacheck.Prop.forAll
+
+import java.util.{Date, UUID}
+import java.net.URI
+import java.math.{BigDecimal, BigInteger}
+
+object ChangesetSpec extends Properties("Changeset") {
+
+  property("startsWith") = forAll { (a: String, b: String) =>
+    // (a+b).startsWith(a)
+    true
+  }
+
+}
 
 /*class FactChangeTests extends mutable.Specification {
 

@@ -4,6 +4,10 @@ import shard._
 
 import datomisca._
 
+class DbChangesets(val txq: TxReportQueue) {
+  def drain = DbChangeset(txq.drain)
+}
+
 class DbChangeset(val dbBefore: Database, val dbAfter: Database, changes: Map[Long,EntityChange])
   extends ServerChangeset(dbBefore.basisT, dbAfter.basisT, changes)
 object DbChangeset {

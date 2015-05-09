@@ -6,6 +6,12 @@ import boopickle._
 import datomisca._
 
 object Attr {
+  def id(attr: Attribute[_,_])(implicit db: Database) = try {
+    Some(db.entity(attr.ident).id)
+  } catch {
+    case e: Throwable => None
+  }
+
   def fromId(attrId: Long)(implicit db: Database) = fromEntity(db.entity(attrId))
 
   def fromEntity(attr: datomisca.Entity): Option[Attr] =
