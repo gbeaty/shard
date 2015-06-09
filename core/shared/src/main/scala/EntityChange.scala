@@ -7,6 +7,8 @@ sealed trait AttrDiff {
 case class OneAttrDiff[V](value: Option[V]) extends AttrDiff { type Value = Option[V] }
 case class ManyAttrDiff[V](value: Map[V,Boolean]) extends AttrDiff { type Value = Map[V,Boolean] }
 
+case class AttrVal[V](value: V)
+
 sealed trait EntityChange {
   val id: Long
 }

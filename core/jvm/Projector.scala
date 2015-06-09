@@ -4,9 +4,8 @@ import shard._
 import datomisca._
 
 trait Projector {
-  def project(changeset: DbChangeset): ServerChangeset
-
-  // def apply(changeset: DbChangeset) = write(Map("t2" -> 2))
+  // def refresh(db: Database): Refresh
+  def project(changeset: DbChangeset): ServerChangeset  
 }
 
 case class AttrProjector(attrs: Set[Attribute[_,_<:Cardinality]]) extends Projector {
@@ -15,6 +14,8 @@ case class AttrProjector(attrs: Set[Attribute[_,_<:Cardinality]]) extends Projec
   def attrIds(implicit db: Database) = attrs.map(attr => db.entity(attr.ident).id)
 
   def hasAttr(db: datomisca.Database, id: Long) = db.entity(id).keySet.intersect(attrNames).size > 0
+
+  // def refresh(db: Database) = db
 
   def project(changeset: DbChangeset) = new ServerChangeset(
     changeset.dbBefore.basisT,

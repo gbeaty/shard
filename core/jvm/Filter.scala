@@ -4,12 +4,13 @@ import shard._
 import datomisca._
 
 trait Selector {
+  // def refresh(db: Database): Map[Long,Entity]
   def select(changes: DbChangeset): Map[Long,EntityChange]
 
   def apply(cs: DbChangeset) = new DbChangeset(cs.dbBefore, cs.dbAfter, select(cs))
 }
 
-trait Filter extends Selector {  
+trait Filter extends Selector {
   def filter(dbBefore: Database, dbAfter: Database, id: Long, change: EntityChange): Option[EntityChange]
 
   def select(changeset: DbChangeset) = changeset.changes.flatMap { kv =>
@@ -19,8 +20,8 @@ trait Filter extends Selector {
 }
 
 trait EntityFilter extends Filter {
-  def refresh(implicit db: Database): Set[Entity]
-  def selectEntity(entity: Entity): Boolean
+  def refresh(implicit db: Database): Set[datomisca.Entity]
+  def selectEntity(entity: datomisca.Entity): Boolean
 
   def filter(dbBefore: Database, dbAfter: Database, eid: Long, change: EntityChange) = change match {
     case up: Upserted =>
@@ -32,7 +33,7 @@ trait EntityFilter extends Filter {
 class AttrValEntityFilter[DD <: AnyRef,V]
   (val attr: Attribute[DD,One], val value: V)
   (implicit val r: Attribute2EntityReaderInj[DD,One,V], val tdd: ToDatomicCast[V]) extends EntityFilter {
-    def selectEntity(entity: Entity) = entity.get(attr) == Some(value)
+    def selectEntity(entity: datomisca.Entity) = entity.get(attr) == Some(value)
 
     final val query = Query("""[
       :find ?eid
@@ -45,7 +46,7 @@ class AttrValEntityFilter[DD <: AnyRef,V]
 
 class ReverseAttrEntityFilter(parent: Long, attr: Attribute[DatomicRef.type,One]) extends EntityFilter {
   val revAttr = attr.reverse
-  def selectEntity(entity: Entity) = entity.get(attr) == Some(parent.underlying)
+  def selectEntity(entity: datomisca.Entity) = entity.get(attr) == Some(parent.underlying)
   def refresh(implicit db: Database) =
     db.entity(parent).read(revAttr)(Attribute2EntityReaderCast.attr2EntityReaderCastManyIdOnly).map(db.entity(_))
 }
