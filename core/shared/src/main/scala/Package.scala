@@ -1,1 +1,3 @@
-// package object shard
+package object shard {
+  
+}
