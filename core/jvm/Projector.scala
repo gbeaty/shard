@@ -2,6 +2,14 @@ package shard.server
 
 import shard._
 import datomisca._
+import boopickle._
+
+trait Projector2[C <: Columns] {
+  implicit val rowPickler: Pickler[Row[C]]
+  implicit val rowUnpickler: Unpickler[Row[C]]
+  implicit val diffPickler: Pickler[Diff[C]]
+  implicit val diffUnpickler: Unpickler[Diff[C]]
+}
 
 trait Projector {
   // def refresh(db: Database): Refresh

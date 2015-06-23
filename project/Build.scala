@@ -33,9 +33,9 @@ object Shard extends Build {
       scalaVersion := scala,
       resolvers ++= commonResolvers
     ).jvmSettings(
-      libraryDependencies ++= Seq(datomic, datomisca, "me.chrons" %% "boopickle" % "0.1.3")
+      libraryDependencies ++= Seq(datomic, datomisca, "me.chrons" %% "boopickle" % "1.0.0")
     ).jsSettings(
-      libraryDependencies ++= Seq("me.chrons" %%% "boopickle" % "0.1.3")
+      libraryDependencies ++= Seq("me.chrons" %%% "boopickle" % "1.0.0")
     )
 
   lazy val jvm = core.jvm

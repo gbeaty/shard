@@ -1,4 +1,4 @@
-package shard.client
+package shard.js
 
 import scala.scalajs.js._
 
