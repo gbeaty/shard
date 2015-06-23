@@ -1,4 +1,6 @@
-package shard
+package shard.test
+
+import shard._
 
 import org.scalacheck._
 import scala.math._
@@ -6,20 +8,20 @@ import java.util.{UUID, Date}
 import java.net.URI
 
 object Cols {
-  val bigdec = ColOf[BigDecimal]()
-  val bigint = ColOf[BigInt]()
-  val boolean = ColOf[Boolean]()
-  val bytes = ColOf[Array[Byte]]()
-  val double = ColOf[Double]()
-  // val float = ColOf[Float]()
-  object float extends ColOf[Double]()
-  val instant = ColOf[Date]()
-  // val keyword = ColOf[clojure.lang.Keyword]()
-  val long = ColOf[Long]()
-  // val ref = ColOf[Ref]()
-  val string = ColOf[String]()
-  // val uri = ColOf[URI]()
-  val uuid = ColOf[UUID]()
+  implicit val bigdec = ColOf[BigDecimal]()
+  implicit val bigint = ColOf[BigInt]()
+  implicit val boolean = ColOf[Boolean]()
+  implicit val bytes = ColOf[Array[Byte]]()
+  implicit val double = ColOf[Double]()
+  // implicit val float = ColOf[Float]()
+  implicit val float = ColOf[Float]()
+  implicit val instant = ColOf[Date]()
+  // implicit val keyword = ColOf[clojure.lang.Keyword]()
+  implicit val long = ColOf[Long]()
+  // implicit val ref = ColOf[Ref]()
+  implicit val string = ColOf[String]()
+  // implicit val uri = ColOf[URI]()
+  implicit val uuid = ColOf[UUID]()
 
   val all = bigdec :: bigint :: boolean :: bytes :: double :: float :: instant :: long :: string :: uuid :: CNil
 }
@@ -27,11 +29,22 @@ object Cols {
 object RowGen {
   implicit def arbUuid = Arbitrary(Gen.uuid)
 
-  /*implicit val rowNilGen = Gen.const(Row[CNil.type](Array[Any]()))
-  implicit def rowNelGen[C <: CNel](implicit headArb: Arbitrary[C#Head], tailGen: Gen[Row[C#Tail]]) =
-    tailGen.flatMap(tail => headArb.arbitrary.map(head => Row[C](tail.values :+ head)))
+  implicit val rowNilGen = Gen.const(Row[CNil.type](Map[Col,Any]()))
+  implicit def rowNelGen[C <: CNel](implicit col: C#Head, headArb: Arbitrary[C#Head#Value], tailGen: Gen[Row[C#Tail]]) =
+    tailGen.flatMap(tail => headArb.arbitrary.map(head => Row[C](tail.fields + (col -> head))))
 
-  implicit val diffNilGen = Gen.const(Diff[CNil.type](Map[Int,Any]()))
+  implicit val diffNilGen = Gen.const(Diff[CNil.type](Map[Col,Any]()))
+  implicit def diffNelGen[C <: CNel]
+    (implicit col: C#Head, headArb: Arbitrary[Option[C#Head#Value]], tailGen: Gen[Diff[C#Tail]]) =
+      tailGen.flatMap { tail =>
+        headArb.arbitrary.map { headOpt =>
+          Diff[C](headOpt.map { head =>
+            tail.diffs + (col -> head)
+          }.getOrElse(tail.diffs))
+        }
+      }
+
+  /*implicit val diffNilGen = Gen.const(Diff[CNil.type](Map[Int,Any]()))
   implicit def diffNelGen[C <: CNel](implicit headArb: Arbitrary[Option[C#Head]], tailGen: Gen[Row[C#Tail]]) =
     tailGen.flatMap(tail => headArb.arbitrary.map(head => Row[C](tail.diffs :+ head)))*/
 
