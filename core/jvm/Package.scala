@@ -7,6 +7,8 @@ import java.net.URI
 import java.util.UUID
 
 package object server {
+  //type Cols = shard.Cols[shard.server.Col]
+
   type One = Cardinality.one.type
   type Many = Cardinality.many.type
   type Version = datomisca.Database

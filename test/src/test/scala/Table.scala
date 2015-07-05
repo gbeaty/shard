@@ -10,14 +10,15 @@ import java.net.URI
 import java.math.{BigDecimal, BigInteger}
 
 object RowSpec extends Properties("Changeset") {
-  import RowGen._
-  import shard.test.Cols._
+  import ServerRowGen._
+  import ServerRowGen.platform._
+  import shard.test.TestCols._
 
-  property("rowDiffs") = forAll { (last: Row[Cols.all.type], next: Row[Cols.all.type]) =>
+  property("rowDiffs") = forAll { (last: Row[all.type], next: Row[all.type]) =>
 
-    val forward = last.diff(next)
-    val backward = next.diff(last)
-    val lastDiff = last.diff(last)
-    forward(last) == next && backward(next) == last && lastDiff(last) == last
+    val forward = diff(last, next)
+    val backward = diff(next, last)
+    val lastDiff = diff(last, last)
+    update(last, forward) == next && update(next, backward) == last && update(last, lastDiff) == last
   }
 }

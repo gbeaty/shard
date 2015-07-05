@@ -4,11 +4,18 @@ import shard._
 import datomisca._
 import boopickle._
 
-trait Projector2[C <: Columns] {
-  implicit val rowPickler: Pickler[Row[C]]
-  implicit val rowUnpickler: Unpickler[Row[C]]
-  implicit val diffPickler: Pickler[Diff[C]]
-  implicit val diffUnpickler: Unpickler[Diff[C]]
+case class Projector2[C <: Platform.Cols](cols: C)(implicit
+  val rowPickler: Pickler[Platform.Row[C]],
+  val rowUnpickler: Unpickler[Platform.Row[C]],
+  val diffPickler: Pickler[Platform.Diff[C]],
+  val diffUnpickler: Unpickler[Platform.Diff[C]]
+) {
+
+  /*def project(entities: Seq[Entity]) = entities.map { entity =>
+    cols.toList.map { col =>
+      entity.entity.
+    }
+  }*/
 }
 
 trait Projector {
