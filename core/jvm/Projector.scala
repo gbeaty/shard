@@ -4,7 +4,7 @@ import shard._
 import datomisca._
 import boopickle._
 
-case class Projector2[C <: Platform.Cols](cols: C)(implicit
+/*case class Projector2[C <: Platform.Cols](cols: C)(implicit
   val rowPickler: Pickler[Platform.Row[C]],
   val rowUnpickler: Unpickler[Platform.Row[C]],
   val diffPickler: Pickler[Platform.Diff[C]],
@@ -16,7 +16,7 @@ case class Projector2[C <: Platform.Cols](cols: C)(implicit
       entity.entity.
     }
   }*/
-}
+}*/
 
 trait Projector {
   // def refresh(db: Database): Refresh

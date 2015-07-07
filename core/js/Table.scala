@@ -4,17 +4,17 @@ import shard._
 import boopickle._
 import scalajs.js._
 
-class Table[C <: Platform.Cols]
+class Table[C <: Cols]
   (val id: Int, val cols: C)
-  (implicit val rowPickler: Pickler[Platform.Row[C]], val rowUnpickler: Unpickler[Platform.Row[C]],
-            val diffPickler: Pickler[Platform.Diff[C]], val diffUnpickler: Unpickler[Platform.Diff[C]]) extends shard.WriteTable[Platform.type,C] {
+  (implicit val rowPickler: Pickler[Row[C]], val rowUnpickler: Unpickler[Row[C]],
+            val diffPickler: Pickler[Diff[C]], val diffUnpickler: Unpickler[Diff[C]]) extends shard.WriteTable[C,Platform.type] {
 
-    var _rows = Dictionary[Platform.Row[C]]()
+    var _rows = Dictionary[Row[C]]()
     val rows = _rows
     private var _version: Option[Long] = None
     def version = _version
 
-    def refresh(newVersion: Long, newRows: Dictionary[Platform.Row[C]]) {
+    def refresh(newVersion: Long, newRows: Dictionary[Row[C]]) {
       _rows = newRows
       _version = Some(newVersion)
     }
@@ -33,7 +33,7 @@ class Table[C <: Platform.Cols]
           None
         }
         case c: Update => if(_rows.contains(id)) {
-          _rows += (id -> Platform.update(_rows(id), c.diff))
+          _rows += (id -> c.diff(_rows(id)))
           None
         } else {
           Some(c -> KeyNotFound)

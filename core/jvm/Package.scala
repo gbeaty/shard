@@ -7,6 +7,8 @@ import java.net.URI
 import java.util.UUID
 
 package object server {
+  type Row[C <: CList] = Platform.Row[C]
+  type Diff[C <: CList] = Platform.Diff[C]
   //type Cols = shard.Cols[shard.server.Col]
 
   type One = Cardinality.one.type

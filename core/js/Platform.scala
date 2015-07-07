@@ -2,37 +2,33 @@ package shard.js
 
 import scala.scalajs._
 
+import shard.CList
+
 object Platform extends shard.Platform {
-  trait Col {
-    type Value  
-  }
-  case class ColOf[V]() extends Col {
-    type Value = V
-  }
+  type RowData = js.Array[Any]
+  type DiffData = js.Array[Any]
 
-  case class Row[C <: CList](array: js.Array[Any])
-  case class Diff[C <: CList](array: js.Array[Any])
-
-  def diff[C <: CList](last: Row[C], next: Row[C]) = {
+  def diffData(prev: RowData, next: RowData) = {
     var i = 0
     val res = js.Array[Any]()
-    while(i < last.array.length) {
-      val nf = next.array(i)
-      if(last.array(i) != nf) {
+    while(i < prev.length) {
+      val nf = next(i)
+      if(prev(i) != nf) {
         res(i) = nf
       }
       i += 1
     }
-    Diff[C](res)
+    res
   }
-  def update[C <: CList](row: Row[C], diff: Diff[C]) = {
+
+  def updateData(row: RowData, diff: DiffData) = {
     var i = 0
     val res = js.Array[Any]()
-    while(i < row.array.length) {
-      val d = diff.array(i)
-      res(i) = if(d == null) row.array(i) else d
+    while(i < row.length) {
+      val d = diff(i)
+      res(i) = if(d == null) row(i) else d
       i += 1
     }
-    Row[C](res)
+    res
   }
 }
