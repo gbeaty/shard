@@ -2,15 +2,22 @@ package shard.js
 
 import scala.scalajs._
 
-import shard.CList
+import boopickle._
 
-object Platform extends shard.Platform {
-  type RowData = js.Array[Any]
-  type DiffData = js.Array[Any]
+trait Platform extends shard.Platform {
+  trait Col {
+    type Value
+    val pickler: Pickler[Value]
+  }
+
+  type RowData = scalajs.js.Array[Any]
+  type DiffData = scalajs.js.Array[Any]
+
+  def getField(data: RowData, index: Int) = data(index)
 
   def diffData(prev: RowData, next: RowData) = {
     var i = 0
-    val res = js.Array[Any]()
+    val res = scalajs.js.Array[Any]()
     while(i < prev.length) {
       val nf = next(i)
       if(prev(i) != nf) {
@@ -23,7 +30,7 @@ object Platform extends shard.Platform {
 
   def updateData(row: RowData, diff: DiffData) = {
     var i = 0
-    val res = js.Array[Any]()
+    val res = scalajs.js.Array[Any]()
     while(i < row.length) {
       val d = diff(i)
       res(i) = if(d == null) row(i) else d
@@ -31,4 +38,7 @@ object Platform extends shard.Platform {
     }
     res
   }
+
+  type Rows[A] = scalajs.js.Array[A]//[RowData]
+  // type Changes = js.Array
 }

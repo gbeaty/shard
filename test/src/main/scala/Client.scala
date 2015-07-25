@@ -1,7 +1,7 @@
 package shard.test
 
 import shard._
-import shard.client._
+import shard.js._
 
 import scalajs._
 

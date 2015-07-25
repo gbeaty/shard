@@ -18,7 +18,7 @@ import boopickle._
   }*/
 }*/
 
-trait Projector {
+/*trait Projector {
   // def refresh(db: Database): Refresh
   def project(changeset: DbChangeset): ServerChangeset  
 }
@@ -54,4 +54,4 @@ case class AttrProjector(attrs: Set[Attribute[_,_<:Cardinality]]) extends Projec
       }).map(eid -> _)
     }.toMap
   )
-}
+}*/

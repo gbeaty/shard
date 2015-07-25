@@ -3,7 +3,7 @@ package shard.server
 import shard._
 import datomisca._
 
-case class Selector(id: String, bindings: Binding*) {
+/*case class Selector(id: String, bindings: Binding*) {
   def selectEntity(entity: datomisca.Entity) = bindings.forall(_.apply(entity))
 
   def select(changeset: DbChangeset): Map[Long,EntityChange] = changeset.changes.flatMap { kv =>
@@ -19,4 +19,4 @@ case class Selector(id: String, bindings: Binding*) {
       case rem: Removed => if(before) Some(rem) else None
     }).map((eid, _))
   }
-}
+}*/

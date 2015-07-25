@@ -6,21 +6,37 @@ import scalajs.js._
 
 class Table[C <: Cols]
   (val id: Int, val cols: C)
-  (implicit val rowPickler: Pickler[Row[C]], val rowUnpickler: Unpickler[Row[C]],
-            val diffPickler: Pickler[Diff[C]], val diffUnpickler: Unpickler[Diff[C]]) extends shard.WriteTable[C,Platform.type] {
+  (implicit val rowPickler: Pickler[shard.js.Row[C]],
+            val diffPickler: Pickler[shard.js.Diff[C]]) extends shard.WriteTable[C,shard.js.platform.type] {
 
-    var _rows = Dictionary[Row[C]]()
+    var _rows = Dictionary[Row]()
     val rows = _rows
     private var _version: Option[Long] = None
     def version = _version
 
-    def refresh(newVersion: Long, newRows: Dictionary[Row[C]]) {
+    def refresh(newVersion: Long, newRows: Dictionary[Row]) {
       _rows = newRows
       _version = Some(newVersion)
     }
-    
-    def transact(cs: Seq[Change]) = {
-      val result = cs.flatMap(change(_))
+
+    def transact(cs: Changeset): Boolean =
+      if(_version.forall(_ == cs.beforeVersion)) {
+        if(cs.changes.forall(checkChange(_))) {
+          cs.changes.foreach(change(_))
+          _version = Some(cs.afterVersion)
+          true
+        } else {
+          false
+        }
+      } else {
+        false
+      }
+
+    // Since each (potential) entity should have only 1 change, we can check their validity ahead of time.
+    def checkChange(c: Change) = c match {
+      case c: Insert => !_rows.contains(id.toString)
+      case c: Update => _rows.contains(id.toString)
+      case c: Remove => !_rows.contains(id.toString)
     }
 
     def change(c: Change): Option[(Change, ChangeError)] = {

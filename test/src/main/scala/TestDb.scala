@@ -7,7 +7,7 @@ import datomisca.executioncontext.ExecutionContextHelper._
 
 import scala.concurrent._
 
-class Attrs[C <: Cardinality,D[_] <: AttrDiff](ns: Namespace, prefix: String, card: C)(implicit ag: AttrGen[C,D]) {
+class Attrs[C <: Cardinality](ns: Namespace, prefix: String, card: C) {
   object Datomisca {
     val bigdec = Attribute(ns / (prefix + "Bigdec"), SchemaType.bigdec, card)
     val bigint = Attribute(ns / (prefix + "Bigint"), SchemaType.bigint, card)
@@ -25,6 +25,7 @@ class Attrs[C <: Cardinality,D[_] <: AttrDiff](ns: Namespace, prefix: String, ca
 
     val all = Set(bigdec, bigint, boolean, bytes, double, float, instant, keyword, long, ref, string, uri, uuid)
   }
+  /*
   val bigdec = toAttr(Datomisca.bigdec)
   val bigint = toAttr(Datomisca.bigint)
   val boolean = toAttr(Datomisca.boolean)
@@ -38,6 +39,7 @@ class Attrs[C <: Cardinality,D[_] <: AttrDiff](ns: Namespace, prefix: String, ca
   val string = toAttr(Datomisca.string)
   val uri = toAttr(Datomisca.uri)
   val uuid = toAttr(Datomisca.uuid)
+  */
 }
 
 object Schema {
