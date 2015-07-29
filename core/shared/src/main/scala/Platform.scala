@@ -11,7 +11,9 @@ trait Platform {
 
   type Col <: {
     type Value
-    val pickler: Pickler[Value]
+  }
+  type ColOf[V] = Col {
+    type Value = V
   }
 
   trait CList {
@@ -45,11 +47,25 @@ trait Platform {
   case class Row[C <: CList](data: RowData) {
     def apply(i: Int) = data(i)
 
+    override def equals(that: Any): Boolean = that match {
+      case diff: Row[C] => { // data.equals(diff.data)
+        var i = 0
+        while(i < data.length) {
+          if(data(i) != diff.data(i)) {
+            return false
+          }
+          i += 1
+        }
+        true
+      }
+      case _ => false
+    }
+
     def diff(next: Row[C]) = {
       var i = 0
       val res = newArray[Option[Any]](data.length)
       while(i < data.length) {
-        val nf = next(i)
+        val nf = next(i)        
         res(i) = if(data(i) == nf) None else Some(nf)
         i += 1
       }
@@ -59,12 +75,26 @@ trait Platform {
   case class Diff[C <: CList](data: DiffData) {
     def apply(i: Int) = data(i)
 
+    override def equals(that: Any): Boolean = that match {
+      case diff: Diff[C] => {
+        var i = 0
+        while(i < data.length) {
+          if(data(i) != diff.data(i)) {
+            return false
+          }
+          i += 1
+        }
+        true
+      }
+      case _ => false
+    }
+
     def apply(row: Row[C]) = {
       var i = 0
       val res = newArray[Any](data.length)
       while(i < data.length) {
         val d = data(i)
-        res(i) = if(d == null) row(i) else d
+        res(i) = d.getOrElse(row(i))
         i += 1
       }
       Row[C](res)

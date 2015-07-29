@@ -12,7 +12,6 @@ package object server extends shard.Platform {
 
   trait Col {
     type Value
-    val pickler: Pickler[Value]
     def apply(entity: Entity): Option[Value]
   }
 
@@ -25,7 +24,7 @@ package object server extends shard.Platform {
 
   case class AttributeCol[V,DD <: AnyRef]
   (attribute: Attribute[DD,Cardinality.one.type])
-  (implicit attrC: Attribute2EntityReaderInj[DD,Cardinality.one.type,V], val pickler: Pickler[V]) extends Col {
+  (implicit attrC: Attribute2EntityReaderInj[DD,Cardinality.one.type,V]) extends Col {
     type Value = V
     def apply(entity: Entity) = entity.get(attribute)
   }

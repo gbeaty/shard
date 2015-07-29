@@ -6,7 +6,7 @@ import shard.server._
 import org.specs2._
 
 class EntityChangeTests extends mutable.Specification {
-  val up = Upserted(0L)
+  /*val up = Upserted(0L)
   val one = Schema.One.long
   val many = Schema.Many.long
 
@@ -45,5 +45,5 @@ class EntityChangeTests extends mutable.Specification {
       val bytes = Pickle.intoBytes(two)      
       two ==== Unpickle[Upserted].fromBytes(bytes)
     }
-  }
+  }*/
 }

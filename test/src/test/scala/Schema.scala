@@ -7,6 +7,8 @@ import java.util.{Date, UUID}
 import java.net.URI
 import scala.math.BigDecimal
 
+import boopickle.DefaultBasic._
+
 object Schema {
   val ns = Namespace("test")
   val bigdec = Attribute(ns / "Bigdec", SchemaType.bigdec, Cardinality.one)
@@ -24,38 +26,42 @@ object Schema {
   val uuid = Attribute(ns / "Uuid", SchemaType.uuid, Cardinality.one)
 }
 
-trait TestCols {
-  implicit val bigdec: ColOf[BigDecimal]
-  implicit val bigint: ColOf[BigInt]
-  implicit val boolean: ColOf[Boolean]
-  implicit val bytes: ColOf[Array[Byte]]
-  implicit val double: ColOf[Double]
-  implicit val float: ColOf[Float]
-  implicit val instant: ColOf[Date]
-  implicit val keyword: ColOf[Keyword]
-  implicit val long: ColOf[Long]
-  // implicit val ref: ColOf[Long]
-  implicit val string: ColOf[String]
-  implicit val uri: ColOf[URI]
-  implicit val uuid: ColOf[UUID]
+abstract class TestCols[P <: Platform](val platform: P) {
+  import platform._
+
+  val bigdec: ColOf[BigDecimal]
+  val bigint: ColOf[BigInt]
+  val boolean: ColOf[Boolean]
+  val bytes: ColOf[Array[Byte]]
+  val double: ColOf[Double]
+  val float: ColOf[Float]
+  val instant: ColOf[Date]
+  val keyword: ColOf[Keyword]
+  val long: ColOf[Long]
+  // val ref: ColOf[Long]
+  val string: ColOf[String]
+  val uri: ColOf[URI]
+  val uuid: ColOf[UUID]
+
+  val all =
+    bigdec :: bigint :: boolean :: bytes :: double :: float ::
+    instant :: long :: string :: uuid :: platform.CNil
 }
 
-object ServerTestCols extends TestCols {
-  import shard.server.AttributeCol  
+object ServerTestCols extends TestCols(shard.server.platform) {
+  import platform._
 
-  implicit val bigdec = AttributeCol(Schema.bigdec)
-  implicit val bigint = AttributeCol(Schema.bigint)
-  implicit val boolean = AttributeCol(Schema.boolean)
-  implicit val bytes = AttributeCol(Schema.bytes)
-  implicit val double = AttributeCol(Schema.double)
-  implicit val float = AttributeCol(Schema.float)
-  implicit val instant = AttributeCol(Schema.instant)
-  implicit val keyword = AttributeCol(Schema.keyword)
-  implicit val long = AttributeCol(Schema.long)
-  // implicit val ref = AttributeCol(Schema.ref)
-  implicit val string = AttributeCol(Schema.string)
-  implicit val uri = AttributeCol(Schema.uri)
-  implicit val uuid = AttributeCol(Schema.uuid)
-
-  val all = bigdec :: bigint :: boolean :: bytes :: double :: float :: instant :: keyword :: long :: string :: uri :: uuid :: CNil
+  val bigdec = AttributeCol(Schema.bigdec)
+  val bigint = AttributeCol(Schema.bigint)
+  val boolean = AttributeCol(Schema.boolean)
+  val bytes = AttributeCol(Schema.bytes)
+  val double = AttributeCol(Schema.double)
+  val float = AttributeCol(Schema.float)
+  val instant = AttributeCol(Schema.instant)
+  val keyword = AttributeCol(Schema.keyword)
+  val long = AttributeCol(Schema.long)
+  // val ref = AttributeCol(Schema.ref)
+  val string = AttributeCol(Schema.string)
+  val uri = AttributeCol(Schema.uri)
+  val uuid = AttributeCol(Schema.uuid)
 }

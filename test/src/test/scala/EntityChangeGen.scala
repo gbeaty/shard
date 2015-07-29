@@ -22,7 +22,7 @@ import java.math.{BigDecimal, BigInteger}
 // URI
 // UUID
 
-case class AttrVal[A <: Attr](attr: A, value: A#Value)
+/*case class AttrVal[A <: Attr](attr: A, value: A#Value)
 
 object AttrValGen {
   implicit val arbKeyword = Arbitrary(Arbitrary.arbString.arbitrary.map(s => clojure.lang.Keyword.intern("arb",s)))
@@ -49,7 +49,7 @@ object AttrDiffGen {
 
 object UpsertGen {
   // def apply(id: Long)
-}
+}*/
 
 /*object EntityChangeGen {
 

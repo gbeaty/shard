@@ -14,11 +14,11 @@ object ServerRowSpec extends Properties("Server rows") {
   import ServerRowGen.platform._
   import shard.test.ServerTestCols._
 
-  property("rowDiffs") = forAll { (last: Row[all.type], next: Row[all.type]) =>
+  property("diffs") = forAll { (last: Row[all.type], next: Row[all.type]) =>
 
     val forward = last.diff(next)
     val backward = next.diff(last)
-    val lastDiff = last.diff(last)
-    forward(last) == next && backward(next) == last && lastDiff(last) == last
+    val nowhere = last.diff(last)
+    forward(last) == next && backward(next) == last && nowhere(last) == last
   }
 }

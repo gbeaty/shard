@@ -15,52 +15,26 @@ abstract class RowGen[P <: Platform](val platform: P) {
   implicit def arbRow[C <: Cols](implicit gen: Gen[Row[C]]) = Arbitrary.apply(gen)
   implicit def arbDiff[C <: Cols](implicit gen: Gen[Diff[C]]) = Arbitrary.apply(gen)
 
-  implicit val rowNilGen: Gen[Row[CNil.type]]
-  implicit def rowNelGen[C <: Cols]
-    (implicit col: C#Head, headArb: Arbitrary[C#Type], tailGen: Gen[Row[C#Tail]]): Gen[Row[C]]
+  case class RowTemp[C <: CList](fields: Seq[Any])
+  case class DiffTemp[C <: CList](fields: Seq[Option[Any]])
 
-  implicit val diffNilGen: Gen[Diff[CNil.type]]
-  /*implicit def diffNelGen[C <: Cols]
-    (implicit col: C#Head, headArb: Arbitrary[Option[C#Head#Value]], tailGen: Gen[Diff[C#Tail]]): Gen[Diff[C]]*/
+  implicit val rowTempNilGen = Gen.const(RowTemp[CNil.type](Seq[Any]()))
+  implicit def rowTempNelGen[C <: Cols]
+    (implicit headArb: Arbitrary[C#Type], tailGen: Gen[RowTemp[C#Tail]]) =
+      tailGen.flatMap(tail => headArb.arbitrary.map(head => RowTemp[C](head +: tail.fields)))
+
+  implicit val diffTempNilGen = Seq[Any]()
+  implicit def diffTempNelGen[C <: Cols]
+    (implicit headArb: Arbitrary[Option[C#Type]], tailGen: Gen[DiffTemp[C#Tail]]) =
+      tailGen.flatMap(tail => headArb.arbitrary.map(head => DiffTemp[C](head +: tail.fields)))
+
+  implicit def rowGen[C <: Cols](implicit tempGen: Gen[RowTemp[C]]) =
+    tempGen.map(t => Row[C](t.fields.toArray: Array[Any]))
+  
+  implicit def diffGen[C <: Cols](implicit tempGen: Gen[DiffTemp[C]]) =
+    tempGen.map(t => Diff[C](t.fields.toArray: Array[Option[Any]]))
 }
 
-object ServerRowGen extends RowGen(shard.server.Platform) {
-  import platform._  
+object ServerRowGen extends RowGen(shard.server.platform)
 
-  implicit val rowNilGen = Gen.const(Row[CNil.type](Map[Col,Any]()))
-  implicit def rowNelGen[C <: Cols]
-    (implicit col: C#Head, headArb: Arbitrary[C#Type], tailGen: Gen[Row[C#Tail]]): Gen[Row[C]] =
-      tailGen.flatMap(tail => headArb.arbitrary.map(head => Row[C](tail.data + (col -> head))))
-
-  implicit val diffNilGen = Gen.const(Diff[CNil.type](Map[Col,Any]()))
-  implicit def diffNelGen[C <: Cols]
-    (implicit col: C#Head, headArb: Arbitrary[Option[C#Head#Value]], tailGen: Gen[Diff[C#Tail]]): Gen[Diff[C]] =
-      tailGen.flatMap { tail =>
-        headArb.arbitrary.map { headOpt =>
-          Diff[C](headOpt.map { head =>
-            tail.data + (col -> head)
-          }.getOrElse(tail.data))
-        }
-      }
-}
-
-object JsRowGen extends RowGen(shard.js.Platform) {
-  import scalajs._
-  import platform._
-
-  implicit val rowNilGen = Gen.const(Row[CNil.type](js.Array[Any]()))
-  implicit def rowNelGen[C <: Cols]
-    (implicit col: C#Head, headArb: Arbitrary[C#Type], tailGen: Gen[Row[C#Tail]]): Gen[Row[C]] =
-      tailGen.flatMap(tail => headArb.arbitrary.map(head => Row[C](tail.data :+ head)))
-
-  implicit val diffNilGen = Gen.const(Diff[CNil.type](js.Array[Any]()))
-  implicit def diffNelGen[C <: Cols]
-    (implicit col: C#Head, headArb: Arbitrary[Option[C#Head#Value]], tailGen: Gen[Diff[C#Tail]]): Gen[Diff[C]] =
-      tailGen.flatMap { tail =>
-        headArb.arbitrary.map { headOpt =>
-          Diff[C](headOpt.map { head =>
-            tail.data :+ head
-          }.getOrElse(tail.data))
-        }
-      }
-}
+object JsRowGen extends RowGen(shard.js.platform)

@@ -6,7 +6,7 @@ import org.specs2._
 import datomisca._
 
 class EntityChangeTests extends mutable.Specification {
-  val testDb = new TestDb
+  /*val testDb = new TestDb
   implicit def db = testDb.conn.database
 
   val nonexistent = Attribute(Namespace("ne") / "ne", SchemaType.long, Cardinality.one)
@@ -16,5 +16,5 @@ class EntityChangeTests extends mutable.Specification {
       Attr.id(Schema.One.Datomisca.long).isDefined ==== true
       Attr.id(nonexistent) ==== None
     }
-  }
+  }*/
 }

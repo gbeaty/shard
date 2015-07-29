@@ -1,8 +1,11 @@
 package shard
 
 import scalajs._
+import boopickle._
 
-package object js extends shard.js.Platform {
+import scala.reflect.ClassTag
+
+package object js extends shard.Platform {
   val platform = this
 
   trait Col {
@@ -14,4 +17,6 @@ package object js extends shard.js.Platform {
   type UnderlyingDiff = scalajs.js.Array[Any]
 
   def newArray[A](len: Int)(implicit ct: ClassTag[A]) = new scalajs.js.Array[A](len)
+
+  type Rows[A] = scalajs.js.Array[A]
 }
