@@ -12,9 +12,6 @@ trait Platform {
   type Col <: {
     type Value
   }
-  type ColOf[V] = Col {
-    type Value = V
-  }
 
   trait CList {
     type All <: Col
@@ -28,7 +25,7 @@ trait Platform {
     type Type = Head#Value
 
     val head: Head
-    val tail: Tail
+    val tail: Tail    
   }
   case class ColsOf[H <: Col, T <: CList](head: H, tail: T) extends Cols {
     type Head = H    
@@ -37,12 +34,13 @@ trait Platform {
     def ::[C <: Col](col: C) = new ColsOf(col, this)
     lazy val toSeq = head +: tail.toSeq
   }
-  object CNil extends CList {
+  trait CNil extends CList {
     type All = Col
 
     def ::[C <: Col](col: C) = new ColsOf(col, this)
     lazy val toSeq = Seq[Col]()
   }
+  object CNil extends CNil
 
   case class Row[C <: CList](data: RowData) {
     def apply(i: Int) = data(i)

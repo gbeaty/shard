@@ -11,7 +11,7 @@ object Shard extends Build {
   val appVersion = "0.0.1"
   val scala = "2.11.7"
 
-  val datomic = "com.datomic" % "datomic-free" % "0.9.5173"
+  val datomic = "com.datomic" % "datomic-free" % "0.9.5206"
   val datomisca = "com.github.dwhjames" %% "datomisca" % "0.7.0"
 
   val commonResolvers = Seq(

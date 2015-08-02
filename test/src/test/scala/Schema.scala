@@ -29,19 +29,19 @@ object Schema {
 abstract class TestCols[P <: Platform](val platform: P) {
   import platform._
 
-  val bigdec: ColOf[BigDecimal]
-  val bigint: ColOf[BigInt]
-  val boolean: ColOf[Boolean]
-  val bytes: ColOf[Array[Byte]]
-  val double: ColOf[Double]
-  val float: ColOf[Float]
-  val instant: ColOf[Date]
-  val keyword: ColOf[Keyword]
-  val long: ColOf[Long]
-  // val ref: ColOf[Long]
-  val string: ColOf[String]
-  val uri: ColOf[URI]
-  val uuid: ColOf[UUID]
+  val bigdec: Col { type Value = BigDecimal }
+  val bigint: Col { type Value = BigInt }
+  val boolean: Col { type Value = Boolean }
+  val bytes: Col { type Value = Array[Byte] }
+  val double: Col { type Value = Double }
+  val float: Col { type Value = Float }
+  val instant: Col { type Value = Date }
+  val keyword: Col { type Value = Keyword }
+  val long: Col { type Value = Long }
+  // val ref: Col { type Value = Long }
+  val string: Col { type Value = String }
+  val uri: Col { type Value = URI }
+  val uuid: Col { type Value = UUID }
 
   val all =
     bigdec :: bigint :: boolean :: bytes :: double :: float ::
@@ -64,4 +64,22 @@ object ServerTestCols extends TestCols(shard.server.platform) {
   val string = AttributeCol(Schema.string)
   val uri = AttributeCol(Schema.uri)
   val uuid = AttributeCol(Schema.uuid)
+}
+
+object JsTestCols extends TestCols(shard.js.platform) {
+  import platform._
+
+  val bigdec = Column[BigDecimal]
+  val bigint = Column[BigInt]
+  val boolean = Column[Boolean]
+  val bytes = Column[Array[Byte]]
+  val double = Column[Double]
+  val float = Column[Float]
+  val instant = Column[Date]
+  val keyword = Column[Keyword]
+  val long = Column[Long]
+  // val ref = Column[Long]
+  val string = Column[String]
+  val uri = Column[URI]
+  val uuid = Column[UUID]
 }

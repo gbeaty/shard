@@ -10,7 +10,9 @@ package object js extends shard.Platform {
 
   trait Col {
     type Value
-    val pickler: Pickler[Value]
+  }
+  case class Column[V]() extends Col {
+    type Value = V
   }
 
   type UnderlyingRow = scalajs.js.Array[Any]
