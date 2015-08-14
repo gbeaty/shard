@@ -2,26 +2,26 @@ package shard
 
 import boopickle._
 
-class Picklers[P <: Platform](val platform: P) {
+class Picklers[P <: Platform] {
 
-  sealed trait PList[C <: platform.CList] {
+  sealed trait PList[C <: CList[P]] {
     val length: Int
   }
-  class PNel[C <: platform.Cols](val pickler: Pickler[C#Head], val tail: PList[C#Tail])
+  class PNel[C <: Cols[P]](val pickler: Pickler[C#Head], val tail: PList[C#Tail])
     extends PList[C] {
       type Head = C#Head
       val length = tail.length + 1
     }
-  implicit object PNil extends PList[platform.CNil.type] {
+  implicit object PNil extends PList[CNil[P]] {
     val length = 0
   }
 
-  implicit def cnelPickler[C <: platform.Cols](implicit head: Pickler[C#Head], tail: PList[C#Tail]) =
+  implicit def cnelPickler[C <: Cols[P]](implicit head: Pickler[C#Head], tail: PList[C#Tail]) =
     new PNel(head, tail)
 
-  class RowPickler[C <: platform.Cols](implicit plist: PNel[C]) {
+  class RowPickler[C <: Cols[P]](implicit plist: PNel[C]) {
     
-    def pickle(row: platform.Row[C])(implicit state: PickleState) = {
+    def pickle(row: Row[P,C])(implicit state: PickleState) = {
       var i = 0
       var pHead: PList[_] = plist
       while(i < row.data.length) {
@@ -48,7 +48,7 @@ class Picklers[P <: Platform](val platform: P) {
           case PNil =>
         }
       }
-      platform.Row[C](res)
+      Row[P,C](res)
     }
   }
 

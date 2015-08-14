@@ -5,10 +5,10 @@ import boopickle._
 
 import scala.reflect.ClassTag
 
-package object js extends shard.Platform {
-  val platform = this
+package object js {
+  implicit val platform = new shard.js.Platform
 
-  trait Col {
+  /*trait Col {
     type Value
   }
   case class Column[V]() extends Col {
@@ -20,5 +20,5 @@ package object js extends shard.Platform {
 
   def newArray[A](len: Int)(implicit ct: ClassTag[A]) = new scalajs.js.Array[A](len)
 
-  type Rows[A] = scalajs.js.Array[A]
+  type Rows[A] = scalajs.js.Array[A]*/
 }

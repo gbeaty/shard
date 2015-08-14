@@ -26,26 +26,26 @@ object Schema {
   val uuid = Attribute(ns / "Uuid", SchemaType.uuid, Cardinality.one)
 }
 
-abstract class TestCols[P <: Platform](val platform: P) {
+abstract class TestCols[P <: PlatformOf[P]](val platform: P) {
   import platform._
 
-  val bigdec: Col { type Value = BigDecimal }
-  val bigint: Col { type Value = BigInt }
-  val boolean: Col { type Value = Boolean }
-  val bytes: Col { type Value = Array[Byte] }
-  val double: Col { type Value = Double }
-  val float: Col { type Value = Float }
-  val instant: Col { type Value = Date }
-  val keyword: Col { type Value = Keyword }
-  val long: Col { type Value = Long }
-  // val ref: Col { type Value = Long }
-  val string: Col { type Value = String }
-  val uri: Col { type Value = URI }
-  val uuid: Col { type Value = UUID }
+  val bigdec: P#Col { type Value = BigDecimal }
+  val bigint: P#Col { type Value = BigInt }
+  val boolean: P#Col { type Value = Boolean }
+  val bytes: P#Col { type Value = Array[Byte] }
+  val double: P#Col { type Value = Double }
+  val float: P#Col { type Value = Float }
+  val instant: P#Col { type Value = Date }
+  val keyword: P#Col { type Value = Keyword }
+  val long: P#Col { type Value = Long }
+  // val ref: P#Col { type Value = Long }
+  val string: P#Col { type Value = String }
+  val uri: P#Col { type Value = URI }
+  val uuid: P#Col { type Value = UUID }
 
   val all =
     bigdec :: bigint :: boolean :: bytes :: double :: float ::
-    instant :: long :: string :: uuid :: platform.CNil
+    instant :: long :: string :: uuid :: CNil
 }
 
 object ServerTestCols extends TestCols(shard.server.platform) {

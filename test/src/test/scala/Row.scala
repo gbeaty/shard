@@ -9,23 +9,20 @@ import java.util.{Date, UUID}
 import java.net.URI
 import java.math.{BigDecimal, BigInteger}
 
-class RowSpec[P <: Platform](val schema: TestCols[P], val rowGen: RowGen[P]) extends Properties("Server rows") {
-  import rowGen._
-  import rowGen.platform._
-  import schema._
+abstract class RowSpec[P <: PlatformOf[P]]
+  (val schema: TestCols[P], val rowGen: RowGen[P])(implicit val platform: P) extends Properties("Server rows") {
 
-  import org.scalacheck._
-  // val test: P#Cols = schema.all
-  // val test2: rowGen.platform.Cols = schema.all
-  // implicitly[Arbitrary[all.type]](arbRow[all.type])
+    import org.scalacheck._
+    val cols: Cols[P] = schema.all
+    implicit val arbGen: Arbitrary[Row[P,schema.all.type]]    
 
-  /*property("diffs") = forAll { (last: Row[all.type], next: Row[all.type]) =>
+    property("diffs") = forAll { (last: Row[P,schema.all.type], next: Row[P,schema.all.type]) =>
 
-    val forward = last.diff(next)
-    val backward = next.diff(last)
-    val nowhere = last.diff(last)
-    forward(last) == next && backward(next) == last && nowhere(last) == last
-  }*/
+      val forward = last.diff(next)(platform)
+      val backward = next.diff(last)(platform)
+      val nowhere = last.diff(last)(platform)
+      forward(last)(platform) == next && backward(next)(platform) == last && nowhere(last)(platform) == last
+    }
 }
 
 // object ServerRowSpec extends RowSpec(ServerTestCols, ServerRowGen)

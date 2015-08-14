@@ -4,10 +4,10 @@ import shard._
 import boopickle._
 import scalajs.js._
 
-class Table[C <: Cols]
+class Table[C <: Cols[Platform]]
   (val id: Int, val cols: C)
-  (implicit val rowPickler: Pickler[shard.js.Row[C]],
-            val diffPickler: Pickler[shard.js.Diff[C]]) extends shard.WriteTable[C,shard.js.platform.type] {
+  (implicit val rowPickler: Pickler[shard.Row[Platform,C]],
+            val diffPickler: Pickler[shard.Diff[Platform,C]]) extends shard.WriteTable[C,Platform] {
 
     var _rows = Dictionary[Row]()
     val rows = _rows
@@ -21,7 +21,8 @@ class Table[C <: Cols]
 
     def transact(cs: Changeset): Boolean =
       if(_version.forall(_ == cs.beforeVersion)) {
-        if(cs.changes.forall(checkChange(_))) {
+        val test: scalajs.js.Array[Change] = cs.changes
+        if(cs.changes.forall(checkChange(_))) {          
           cs.changes.foreach(change(_))
           _version = Some(cs.afterVersion)
           true
