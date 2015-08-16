@@ -46,6 +46,8 @@ abstract class TestCols[P <: PlatformOf[P]](val platform: P) {
   val all =
     bigdec :: bigint :: boolean :: bytes :: double :: float ::
     instant :: long :: string :: uuid :: CNil
+
+  type All = all.type
 }
 
 object ServerTestCols extends TestCols(shard.server.platform) {
