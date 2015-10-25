@@ -6,7 +6,7 @@ import org.scalacheck.Properties
 import org.scalacheck.Prop.forAll
 import org.scalacheck._
 
-import java.util.{Date, UUID}
+/*import java.util.{Date, UUID}
 import java.net.URI
 import java.math.{BigDecimal, BigInteger}
 
@@ -28,10 +28,26 @@ object ServerRowSpec extends RowSpec[shard.server.Platform,ServerTestCols.All]("
   import ServerRowGen._
 
   implicit lazy val arbRow = ServerRowGen.arbRow[ServerTestCols.All]
-}
+}*/
 
-object JsRowSpec extends RowSpec[shard.js.Platform,JsTestCols.All]("js")(shard.js.platform) {
+/*object JsRowSpec extends RowSpec[shard.js.Platform,JsTestCols.All]("js")(shard.js.platform) {
   import JsRowGen._
 
   implicit lazy val arbRow = JsRowGen.arbRow[JsTestCols.All]
+}*/
+
+import utest._
+import utest.ExecutionContext.RunNow
+
+object RowTests extends TestSuite {
+
+  // import ServerRowGen._
+  // def random = ServerRowGen.arbRow[ServerTestCols.All]
+  // val testRow = Row[server.Platform,ServerTestCols.All](Seq[Any](1,2,3).toArray)
+
+  val tests = TestSuite {
+    'forward {
+      assert(true)
+    }
+  }
 }

@@ -5,108 +5,110 @@ import scala.collection.mutable.ArrayLike
 
 import scala.reflect._
 
-trait CList[P <: Platform] {
-  type All <: P#Col
+sealed trait RList {
+  type This <: RList
+  type Diff <: RList
 
-  val toSeq: Seq[P#Col]
+  def diff(next: This): Diff
+  def update(diff: Diff): This
+  def apply(i: Int): Any
 }
-trait Cols[P <: Platform] extends CList[P] {
-  type Head <: P#Col
-  type Tail <: CList[P]
+sealed trait Row extends RList {
+  type Head
+  type Tail <: RList  
+}
+case class RowOf[H,T <: RList](value: H, tail: T) extends Row {
+  type This = RowOf[H,T]
+  type Head = H
+  type Tail = T
+  type Diff = RowOf[Option[Head],Tail#Diff]
+
+  def ::[V](value: V) = RowOf(value, this)
+  // def toRow[P <: Platform, C <: Cols[P]]
+
+  override def equals(that: Any): Boolean = that match {
+    case RowOf(v,t) => if(v == t) tail.equals(t) else false
+    case _ => false
+  }
+
+  def diff(next: This) =
+    RowOf[Option[H],T#Diff](
+      if(value == next.value) None else Some(next.value),
+      tail.diff(next.tail.asInstanceOf[tail.This])
+    )
+
+  def update(diff: Diff) =
+    RowOf(diff.value.getOrElse(value), tail.update(diff.tail.asInstanceOf[tail.Diff]).asInstanceOf[T])
+
+  def apply(i: Int) = if(i == 0) value else tail.apply(i - 1)
+}
+object RNil extends RList {
+  type This = RNil.type
+  type Diff = RNil.type
+
+  def ::[V](value: V) = RowOf(value, RNil)
+
+  override def equals(that: Any): Boolean = that match {
+    case RNil => true
+    case _ => false
+  }
+
+  def diff(next: This) = RNil
+  def update(diff: Diff) = RNil
+  def apply(i: Int) = RNil
+}
+
+trait CList {
+  type All <: Col
+  type Row <: shard.RList
+  type Diff = Row#Diff
+
+  val toSeq: Seq[Col]
+  val length: Int
+}
+trait Cols extends CList {
+  type Head <: Col
+  type Tail <: CList
   type All = Head with Tail#All
+  type Row = RowOf[Head#Value,Tail#Row]
   type Type = Head#Value
 
   val head: Head
-  val tail: Tail    
-}
-case class ColsOf[P <: Platform, H <: P#Col, T <: CList[P]](head: H, tail: T) extends Cols[P] {
-  type Head = H    
-  type Tail = T
+  val tail: Tail
 
-  def ::[C <: P#Col](col: C) = new ColsOf[P,C,ColsOf[P,H,T]](col, this)
+  val length: Int
+}
+case class ColsOf[H <: Col, T <: CList](head: H, tail: T) extends Cols {
+  type Head = H
+  type Tail = T  
+
+  def ::[C <: Col](col: C) = new ColsOf[C,ColsOf[H,T]](col, this)
   lazy val toSeq = head +: tail.toSeq
+  val length = 1 + tail.length
 }
-class CNil[P <: Platform] extends CList[P] {
-  type All = P#Col
+object CNil extends CList {
+  type All = Col
+  type Row = RNil.type
 
-  def ::[C <: P#Col](col: C) = new ColsOf[P,C,CNil[P]](col, this)
-  lazy val toSeq = Seq[P#Col]()
+  def ::[C <: Col](col: C) = new ColsOf[C,CNil.type](col, this)
+  lazy val toSeq = Seq[Col]()
+  final val length = 0
 }
 
-case class Row[P <: Platform, C <: Cols[P]](data: P#RowData) {
-  def apply(i: Int) = data(i)
-
-  override def equals(that: Any): Boolean = that match {
-    case diff: Row[P,C] => { // data.equals(diff.data)
-      var i = 0
-      while(i < data.length) {
-        if(data(i) != diff.data(i)) {
-          return false
-        }
-        i += 1
-      }
-      true
-    }
-    case _ => false
-  }
-
-  def diff(next: Row[P,C])(implicit platform: P) = {
-    var i = 0
-    val res = platform.newArray[Option[Any]](data.length)
-    while(i < data.length) {
-      val nf = next(i)        
-      res(i) = if(data(i) == nf) None else Some(nf)
-      i += 1
-    }
-    Diff[P,C](res)
-  }
+trait Col {
+  type Value
 }
-case class Diff[P <: Platform, C <: Cols[P]](data: P#DiffData) {
-  def apply(i: Int) = data(i)
-
-  override def equals(that: Any): Boolean = that match {
-    case diff: Diff[P,C] => {
-      var i = 0
-      while(i < data.length) {
-        if(data(i) != diff.data(i)) {
-          return false
-        }
-        i += 1
-      }
-      true
-    }
-    case _ => false
-  }
-
-  def apply(row: Row[P,C])(implicit platform: P) = {
-    var i = 0
-    val res = platform.newArray[Any](data.length)
-    while(i < data.length) {
-      val d = data(i)
-      res(i) = d.getOrElse(row(i))
-      i += 1
-    }
-    Row[P,C](res)
-  }
+case class ColOf[V](id: String) extends Col {
+  type Value = V
 }
 
 trait Platform {
   type This <: Platform
-  type RowData = ArrayLike[Any,_]
-  type DiffData = ArrayLike[Option[Any],_]
+  // type RowData = ArrayLike[Any,_]
+  // type DiffData = ArrayLike[Option[Any],_]
 
-  type CList = shard.CList[This]
-  type Cols = shard.Cols[This]
-  type ColsOf[H <: This#Col, T <: CList] = shard.ColsOf[This, H, T]
-  type CNil = shard.CNil[This]
-  object CNil extends shard.CNil[This]
-
-  type Row[C <: Cols] = shard.Row[This,C]
-  type Diff[C <: Cols] = shard.Diff[This,C]
-
-  type Col <: {
-    type Value
-  }
+  // type Row[C <: Cols] = shard.Row[This,C]
+  // type Diff[C <: Cols] = shard.Diff[This,C]
 
   def newArray[A](len: Int)(implicit ct: ClassTag[A]): ArrayLike[A,_]
 

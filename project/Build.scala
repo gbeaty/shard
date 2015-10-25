@@ -33,11 +33,17 @@ object Shard extends Build {
       scalaVersion := scala,
       resolvers ++= commonResolvers
     ).jvmSettings(
-      libraryDependencies ++= Seq(datomic, datomisca, "me.chrons" %% "boopickle" % "1.1.0")
+      libraryDependencies ++= Seq(
+        datomic,
+        datomisca,
+        "me.chrons" %% "boopickle" % "1.1.0",
+        "com.lihaoyi" %% "utest" % "0.3.1"
+      )
     ).jsSettings(
       libraryDependencies ++= Seq(
         "me.chrons" %%% "boopickle" % "1.1.0",
-        "org.scala-js" %%% "scalajs-dom" % "0.8.0"
+        "org.scala-js" %%% "scalajs-dom" % "0.8.0",
+        "com.lihaoyi" %%% "utest" % "0.3.1"
       )
     )
 
@@ -50,6 +56,7 @@ object Shard extends Build {
     settings = settings ++ Seq(
       scalaVersion := scala,
       resolvers ++= commonResolvers,
+      testFrameworks += new TestFramework("utest.runner.Framework"),
       libraryDependencies ++= Seq(
         datomic,
         "org.specs2" %% "specs2-core" % "3.6" % "test",
@@ -58,7 +65,7 @@ object Shard extends Build {
     )
   ).dependsOn(jvm, js)
 
-  scalaJSStage in Global := FastOptStage
+  scalaJSStage in Global := FastOptStage  
 
   override def rootProject = Some(test)
 }

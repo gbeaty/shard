@@ -4,52 +4,18 @@ import boopickle._
 
 class Picklers[P <: Platform] {
 
-  sealed trait PList[C <: CList[P]] {
-    val length: Int
-  }
-  class PNel[C <: Cols[P]](val pickler: Pickler[C#Head], val tail: PList[C#Tail])
-    extends PList[C] {
-      type Head = C#Head
-      val length = tail.length + 1
+  class RowPickler[H,T <: RList](implicit head: Pickler[H], tail: Pickler[T]) extends Pickler[RowOf[H,T]] {
+    def pickle(row: shard.RowOf[H,T])(implicit state: boopickle.PickleState) {
+      head.pickle(row.value)
+      tail.pickle(row.tail)
     }
-  implicit object PNil extends PList[CNil[P]] {
-    val length = 0
+    def unpickle(implicit state: boopickle.UnpickleState) = RowOf(head.unpickle, tail.unpickle)
   }
 
-  implicit def cnelPickler[C <: Cols[P]](implicit head: Pickler[C#Head], tail: PList[C#Tail]) =
-    new PNel(head, tail)
-
-  class RowPickler[C <: Cols[P]](implicit plist: PNel[C]) {
-    
-    def pickle(row: Row[P,C])(implicit state: PickleState) = {
-      var i = 0
-      var pHead: PList[_] = plist
-      while(i < row.data.length) {
-        pHead match {
-          case pnel: PNel[_] => {
-            pnel.pickler.pickle(row(i).asInstanceOf[pnel.Head])
-            pHead = pnel.tail
-          }
-          case PNil => Unit          
-        }        
-      }
-    }
-
-    def unpickle(implicit state: UnpickleState) = {
-      var i = 0
-      var pHead: PList[_] = plist
-      val res = Array[Any]()
-      while(i < plist.length) {
-        pHead match {
-          case pnel: PNel[_] => {
-            res(i) = pnel.pickler.unpickle
-            pHead = pnel.tail
-          }
-          case PNil =>
-        }
-      }
-      Row[P,C](res)
-    }
+  implicit def rnelPickler[H,T <: RList](implicit head: Pickler[H], tail: Pickler[T]) = new RowPickler[H,T]
+  implicit val rnilPickler = new Pickler[RNil.type] {
+    def pickle(rnil: RNil.type)(implicit state: boopickle.PickleState) = Unit
+    def unpickle(implicit state: boopickle.UnpickleState) = RNil
   }
 
   import BasicPicklers._

@@ -23,3 +23,9 @@ class Platform extends shard.PlatformOf[Platform] {
     def apply(entity: Entity) = entity.get(attribute)
   }
 }
+
+object Col {
+  def apply[V,DD <: AnyRef]
+    (attr: Attribute[DD,Cardinality.one.type])
+    (implicit attrC: Attribute2EntityReaderInj[DD,Cardinality.one.type,V]) = shard.ColOf[V](attr.ident.toString)
+}

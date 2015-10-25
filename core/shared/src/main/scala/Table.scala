@@ -3,11 +3,11 @@ package shard
 import boopickle._
 
 trait Table {
-  type Cols <: shard.Cols[Platform]
+  type Cols <: shard.Cols
   type Platform <: shard.Platform
 
-  type Row = shard.Row[Platform,Cols]
-  type Diff = shard.Diff[Platform,Cols]
+  type Row = Cols#Row
+  type Diff = Cols#Diff
   /*type Change = shard.Change[this.type]
   type Insert = shard.Insert[this.type]
   type Update = shard.Update[this.type]
@@ -15,7 +15,7 @@ trait Table {
   type Refresh = shard.Refresh[this.type]
   type Changeset = shard.Changeset[this.type]*/
 }
-trait TableOf[C <: Cols[P], P <: Platform] extends Table {
+trait TableOf[C <: Cols, P <: Platform] extends Table {
   type Cols = C
   type Platform = P
 
@@ -53,6 +53,6 @@ case class Refresh[T <: Table](beforeVersion: Long, afterVersion: Long, changes:
 case class Changeset[T <: Table](beforeVersion: Long, afterVersion: Long, changes: T#Platform#Rows[Change[T]])
 */
 
-trait WriteTable[C <: Cols[P], P <: Platform] extends TableOf[C,P] {
+trait WriteTable[C <: Cols, P <: Platform] extends TableOf[C,P] {
   def transact(cs: Changeset): Boolean
 }
